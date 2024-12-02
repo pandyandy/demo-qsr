@@ -158,7 +158,7 @@ Please provide an updated response incorporating the additional instruction.
                         ]
                         
                         update_df = data[data['REVIEW_ID'] == review_id].copy()
-                        write_table('out.c-257-data-model.ALL_DATA_FINAL_16', update_df, is_incremental=True)
+                        write_table('in.c-whataburger-demo.REVIEWS', update_df, is_incremental=True)
                         st.success('Response saved successfully!')
                     except Exception as e:
                         st.error(f'Failed to save response: {str(e)}')

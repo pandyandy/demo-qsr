@@ -40,11 +40,11 @@ icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
-locations_data = read_data('out.c-257-qsr-demo.LOCATIONS') #('/data/in/tables/location_review.csv')
-reviews_data = read_data('out.c-257-qsr-demo.REVIEWS')
-sentences_data = read_data('out.c-257-qsr-demo.REVIEW_SENTENCE')
-entities_data = read_data('out.c-257-qsr-demo.REVIEW_ENTITY')
-attributes = pd.read_csv('entity_attribute_counts.csv') #'/data/in/tables/relations.csv')
+locations_data = pd.read_csv(st.secrets['locations_path']) #read_data('out.c-257-qsr-demo.LOCATIONS') #('/data/in/tables/location_review.csv')
+reviews_data = read_data('in.c-whataburger-demo.REVIEWS')
+sentences_data = pd.read_csv(st.secrets['sentences_path']) #read_data('out.c-257-qsr-demo.REVIEW_SENTENCE')
+entities_data = pd.read_csv(st.secrets['entities_path']) #read_data('out.c-257-qsr-demo.REVIEW_ENTITY')
+attributes = pd.read_csv(st.secrets['attributes_path']) #'entity_attribute_counts.csv') #'/data/in/tables/relations.csv')
 
 attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
 pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
@@ -65,7 +65,7 @@ st.sidebar.markdown(
 ## FILTERS
 # Brand Selection
 brand_options = locations_data['BRAND'].unique().tolist()
-brand = st.sidebar.selectbox('Select a brand', brand_options, index=1, placeholder='All')
+brand = 'Whataburger' #st.sidebar.selectbox('Select a brand', brand_options, index=1, placeholder='All')
 locations_data = locations_data[locations_data['BRAND'] == brand]
 location_count_total = len(locations_data)
 
