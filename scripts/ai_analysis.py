@@ -251,6 +251,8 @@ def ai_analysis(data, attributes, sentences, entities):
             else:
                 st.info("No negative entities found for the selected filters.", icon=':material/info:')
 
+        ## REVIEW DETAILS
+        st.markdown("##### Review Details")
         # Merge entities and unique values in a single operation to reduce multiple merges
         data = data.merge(
             entities.groupby('REVIEW_ID')['ENTITY'].apply(list).reset_index(),
@@ -272,8 +274,6 @@ def ai_analysis(data, attributes, sentences, entities):
             st.info("No reviews with feedback text available for the selected filters.", icon=':material/info:')
             st.stop()
 
-        ## REVIEW DETAILS
-        st.markdown("##### Review Details")
         columns = ['REVIEW_DATE', 'RATING', 'REVIEW_TEXT', 'OVERALL_SENTIMENT', 'ADDRESS', 'CATEGORY', 'CATEGORY_GROUP', 'TOPIC', 'ENTITY', 'REVIEWER_NAME', 'REVIEW_URL']
         st.dataframe(filtered_review_data[columns],
                      #.style.map(sentiment_color, subset=["OVERALL_SENTIMENT"]),

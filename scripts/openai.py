@@ -28,32 +28,29 @@ def generate_response(prompt):
         return ''
 
 
-def assistant(file_id, assistant_id):
+def assistant(file_id, assistant_id, bot_data):
     if st.session_state.thread_id is None:
-    
         thread = client.beta.threads.create(
             messages=[
                 {
                     "role": "user",
                     "content": (
                         "To help you navigate the CSV file, here is the description of some important columns: "
-                        "feedback_id: Unique identifier for the feedback. "
-                        "feedback_channel: Source channel of the feedback (e.g., platform or app). "
-                        "place_id: Unique identifier for the place being reviewed. "
-                        "address: Address of the place. "
-                        "place_total_score: The total score of the place based on reviews. "
-                        "place_rev_count: Number of reviews for the place. "
-                        "latitude/longitude: Geographical coordinates of the place. "   
-                        "customer_name: Name of the customer. "
-                        "reviewer_rev_count: Number of reviews by the reviewer. "
-                        "feedback_date: Date when the feedback was given. " 
-                        "rating: The rating given by the reviewer (on a scale). "
-                        "review_content_meal_type: Type of meal mentioned in the review. "
-                        "review_content_service_type: Type of service mentioned. "
-                        "review_content_food/service/atmosphere: Specific ratings for food, service, and atmosphere. "  
-                        "review_text: Text content of the review. "
-                        "sentiment: Sentiment analysis result for the feedback (e.g., positive, negative). "
-                        "city/state/postalCode: Location details of the place."
+                        "REVIEW_ID: Unique identifier for the feedback. "
+                        "FEEDBACK_CHANNEL: Source channel of the feedback (e.g., platform or app). "
+                        "PLACE_ID: Unique identifier for the place being reviewed. "
+                        "PLACE_TOTAL_SCORE: The total score of the place based on reviews. "
+                        "PLACE_REVIEWS_COUNT: Number of reviews for the place. "
+                        "LATITUDE/LONGITUDE: Geographical coordinates of the place. "   
+                        "REVIEWER_NAME: Name of the customer. "
+                        "REVIEW_DATE: Date when the feedback was given. " 
+                        "RATING: The rating given by the reviewer (on a scale). "
+                        "REVIEW_CONTEXT_MEAL_TYPE: Type of meal mentioned in the review. "
+                        "REVIEW_CONTEXT_SERVICE: Type of service mentioned. "
+                        "REVIEW_DETAILED_FOOD/SERVICE/ATMOSPHERE: Specific ratings for food, service, and atmosphere. "  
+                        "REVIEW_TEXT: Text content of the review. "
+                        "OVERALL_SENTIMENT: Sentiment analysis result for the feedback (e.g., positive, negative). "
+                        "CITY/STATE/POSTAL_CODE: Location details of the place."
                     ),
                     "attachments": [
                         {
@@ -76,8 +73,7 @@ def assistant(file_id, assistant_id):
         st.session_state.table_written = True
 
     with st.expander("Data"):
-        data_to_display = pd.read_csv(st.secrets['bot_path'])
-        st.dataframe(data_to_display)
+        st.dataframe(bot_data, hide_index=True)
         #st.caption(f'Thread ID: {st.session_state.thread_id}')
 
     for message in st.session_state.messages:
@@ -138,7 +134,7 @@ def assistant(file_id, assistant_id):
             with st.chat_message("user", avatar='🧑‍💻'):
                 st.markdown(prompt)
 
-            with st.spinner('Analyzing...'):  
+            with st.spinner('🤖 Analyzing, please wait...'):  
                 thread_message = client.beta.threads.messages.create(
                     st.session_state.thread_id,
                     role="user",
