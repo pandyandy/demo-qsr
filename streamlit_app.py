@@ -41,7 +41,7 @@ icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
 locations_data = pd.read_csv(st.secrets['locations_path']) #read_data('out.c-257-qsr-demo.LOCATIONS') #('/data/in/tables/location_review.csv')
-reviews_data = read_data('in.c-whataburger-demo.REVIEWS')
+reviews_data = read_data(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path']) #read_data('out.c-257-qsr-demo.REVIEW_SENTENCE')
 entities_data = pd.read_csv(st.secrets['entities_path']) #read_data('out.c-257-qsr-demo.REVIEW_ENTITY')
 attributes = pd.read_csv(st.secrets['attributes_path']) #'entity_attribute_counts.csv') #'/data/in/tables/relations.csv')
