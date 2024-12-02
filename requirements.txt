@@ -1,0 +1,8 @@
+streamlit
+openai
+streamlit-option-menu
+pandas
+plotly
+kbcstorage
+keboola-streamlit
+networkx
