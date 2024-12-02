@@ -28,7 +28,7 @@ def generate_response(prompt):
         return ''
 
 
-def assistant(file_id, assistant_id, data):
+def assistant(file_id, assistant_id):
     if st.session_state.thread_id is None:
     
         thread = client.beta.threads.create(
@@ -76,11 +76,9 @@ def assistant(file_id, assistant_id, data):
         st.session_state.table_written = True
 
     with st.expander("Data"):
-        data_to_display = data.copy()
-        data_to_display.drop(columns=['REVIEW_ID', 'ID', 'FEEDBACK_ID', 'PLACE_ID', 'STREET', 'CITY', 'STATE', 'POSTAL_CODE', 'REVIEWER_NAME', 'CUSTOMER_ID', 'REVIEWER_ID', 'REVIEWER_URL', 'REVIEWER_NUM_OF_REVIEWS', 'REVIEW_DATE', 'EVENT_DATE', 'FEEDBACK_ORIGINAL_TEXT', 'REVIEW_TEXT'], errors='ignore', inplace=True)
+        data_to_display = pd.read_csv(st.secrets['bot_path'])
         st.dataframe(data_to_display)
-        st.caption(f'Thread ID: {st.session_state.thread_id}')
-
+        #st.caption(f'Thread ID: {st.session_state.thread_id}')
 
     for message in st.session_state.messages:
         if message["role"] == "user":

@@ -133,7 +133,9 @@ if date_selection is None:
     start_date = min_date
     end_date = max_date
 elif date_selection == 'Other':
-    start_date, end_date = st.sidebar.date_input('Select date range', value=[min_date.date(), max_date.date()], min_value=min_date.date(), max_value=max_date.date(), key='date_input')
+    start_date, end_date = st.sidebar.slider('Select date range', value=[min_date.date(), max_date.date()], min_value=min_date.date(), max_value=max_date.date(), key='date_input')
+    start_date = pd.to_datetime(start_date)  # Convert to Timestamp
+    end_date = pd.to_datetime(end_date).replace(hour=23, minute=59)  # Convert to Timestamp and set time to 23:59
 else:
     end_date = pd.to_datetime('today')
     if date_selection == 'Last Week':
@@ -189,4 +191,4 @@ if menu_id == 'Support':
     support(filtered_locations_with_reviews)
 
 if menu_id == 'Assistant':
-    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'], data=data)
+    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'])

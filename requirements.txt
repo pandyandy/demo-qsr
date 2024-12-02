@@ -6,3 +6,4 @@ plotly
 kbcstorage
 keboola-streamlit
 networkx
+matplotlib
