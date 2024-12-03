@@ -66,7 +66,7 @@ st.sidebar.markdown(
 ## FILTERS
 # Brand Selection
 brand_options = locations_data['BRAND'].unique().tolist()
-brand = "Wendy's" #st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
+brand = "Whataburger" #st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
 locations_data = locations_data[locations_data['BRAND'] == brand]
 location_count_total = len(locations_data)
 data_collected_at = locations_data['DATA_COLLECTED_AT'].max()
