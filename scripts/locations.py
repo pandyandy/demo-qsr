@@ -58,7 +58,7 @@ def locations(data):
 
     deck = pdk.Deck(
         initial_view_state=view_state,
-        map_style="light",
+        map_style=None,
         layers=[column_layer],
         tooltip={
             "text": "Location: {ADDRESS}\nLocation Rating: {PLACE_TOTAL_SCORE}\nCollected Reviews: {COUNT}\nAvg Review Rating: {RATING}",

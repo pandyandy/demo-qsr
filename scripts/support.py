@@ -14,7 +14,7 @@ def sentiment_color(val):
     return color_map.get(val, '')
 
 
-def support(data):
+def support(data, reviews_data):
     st.markdown("<br>", unsafe_allow_html=True)
     filtered_review_data_detailed = data[data['REVIEW_TEXT'].notna()].sort_values('REVIEW_DATE', ascending=False)
     if filtered_review_data_detailed.empty:
@@ -151,14 +151,14 @@ Please provide an updated response incorporating the additional instruction.
                         update_df['STATUS'] = update_df['STATUS'].astype(str)
                         update_df['CUSTOMER_SUCCESS_NOTES'] = update_df['CUSTOMER_SUCCESS_NOTES'].astype(str)
                         
-                        data.loc[data['REVIEW_ID'] == review_id, ['RESPONSE', 'STATUS', 'CUSTOMER_SUCCESS_NOTES']] = [
+                        reviews_data.loc[reviews_data['REVIEW_ID'] == review_id, ['RESPONSE', 'STATUS', 'CUSTOMER_SUCCESS_NOTES']] = [
                             update_df['RESPONSE'].iloc[0],
                             update_df['STATUS'].iloc[0], 
                             update_df['CUSTOMER_SUCCESS_NOTES'].iloc[0]
                         ]
                         
-                        update_df = data[data['REVIEW_ID'] == review_id].copy()
-                        write_table('out.c-257-data-model.ALL_DATA_FINAL_16', update_df, is_incremental=True)
+                        update_df = reviews_data[reviews_data['REVIEW_ID'] == review_id].copy()
+                        write_table('in.c-whataburger-demo.REVIEWS', update_df, is_incremental=True)
                         st.success('Response saved successfully!')
                     except Exception as e:
                         st.error(f'Failed to save response: {str(e)}')

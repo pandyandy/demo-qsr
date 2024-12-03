@@ -40,14 +40,15 @@ icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
-locations_data = read_data('out.c-257-qsr-demo.LOCATIONS') #('/data/in/tables/location_review.csv')
-reviews_data = read_data('out.c-257-qsr-demo.REVIEWS')
-sentences_data = read_data('out.c-257-qsr-demo.REVIEW_SENTENCE')
-entities_data = read_data('out.c-257-qsr-demo.REVIEW_ENTITY')
-attributes = pd.read_csv('entity_attribute_counts.csv') #'/data/in/tables/relations.csv')
+locations_data = pd.read_csv(st.secrets['locations_path']) #read_data('out.c-257-qsr-demo.LOCATIONS') #('/data/in/tables/location_review.csv')
+reviews_data = read_data(st.secrets['reviews_path'])
+sentences_data = pd.read_csv(st.secrets['sentences_path']) #read_data('out.c-257-qsr-demo.REVIEW_SENTENCE')
+entities_data = pd.read_csv(st.secrets['entities_path']) #read_data('out.c-257-qsr-demo.REVIEW_ENTITY')
+attributes = pd.read_csv(st.secrets['attributes_path']) #'entity_attribute_counts.csv') #'/data/in/tables/relations.csv')
+bot_data = pd.read_csv(st.secrets['bot_path'])
 
 attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
-pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
+pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They', 'whataburger', 'Whataburger']
 attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
 attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()
 attributes = attributes[attributes['count'] > 2]
@@ -65,9 +66,10 @@ st.sidebar.markdown(
 ## FILTERS
 # Brand Selection
 brand_options = locations_data['BRAND'].unique().tolist()
-brand = st.sidebar.selectbox('Select a brand', brand_options, index=1, placeholder='All')
+brand = st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
 locations_data = locations_data[locations_data['BRAND'] == brand]
 location_count_total = len(locations_data)
+data_collected_at = locations_data['DATA_COLLECTED_AT'].max()
 
 # Merge locations and reviews data and get the count of reviews data based on selected brand
 merged_data = pd.merge(locations_data, reviews_data, on='PLACE_ID', how='inner')
@@ -133,7 +135,9 @@ if date_selection is None:
     start_date = min_date
     end_date = max_date
 elif date_selection == 'Other':
-    start_date, end_date = st.sidebar.date_input('Select date range', value=[min_date.date(), max_date.date()], min_value=min_date.date(), max_value=max_date.date(), key='date_input')
+    start_date, end_date = st.sidebar.slider('Select date range', value=[min_date.date(), max_date.date()], min_value=min_date.date(), max_value=max_date.date(), key='date_input')
+    start_date = pd.to_datetime(start_date)  # Convert to Timestamp
+    end_date = pd.to_datetime(end_date).replace(hour=23, minute=59)  # Convert to Timestamp and set time to 23:59
 else:
     end_date = pd.to_datetime('today')
     if date_selection == 'Last Week':
@@ -159,15 +163,7 @@ if filtered_locations_with_reviews.empty:
     st.stop()
 
 st.sidebar.divider()
-st.sidebar.caption(f"Data last captured on: {reviews_data['REVIEW_DATE'].max()}")
-
-## FILTER DATA
-#filtered_review_data = review_data[review_data['BRAND'] == selected_brand]
-#filtered_review_data = filtered_review_data[filtered_review_data['STATE'].isin(selected_state)]
-#filtered_review_data = filtered_review_data[filtered_review_data['CITY'].isin(selected_city)]
-#filtered_review_data = filtered_review_data[filtered_review_data['ADDRESS'].isin(selected_location)]
-#filtered_review_data = filtered_review_data[filtered_review_data['RATING'].isin(selected_rating)]
-#filtered_review_data = filtered_review_data[filtered_review_data['OVERALL_SENTIMENT'].isin(selected_sentiment)]
+st.sidebar.caption(f"**Data last updated on:** {data_collected_at}.")
 
 ## TABS
 if menu_id == 'About':
@@ -186,7 +182,7 @@ if menu_id == 'AI Analysis':
     ai_analysis(filtered_locations_with_reviews, attributes, sentences_data_filtered, entities_data)
 
 if menu_id == 'Support':
-    support(filtered_locations_with_reviews)
+    support(filtered_locations_with_reviews, reviews_data)
 
 if menu_id == 'Assistant':
-    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'], data=data)
+    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'], bot_data=bot_data)
