@@ -69,6 +69,7 @@ brand_options = locations_data['BRAND'].unique().tolist()
 brand = st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
 locations_data = locations_data[locations_data['BRAND'] == brand]
 location_count_total = len(locations_data)
+data_collected_at = locations_data['DATA_COLLECTED_AT'].max()
 
 # Merge locations and reviews data and get the count of reviews data based on selected brand
 merged_data = pd.merge(locations_data, reviews_data, on='PLACE_ID', how='inner')
@@ -162,15 +163,7 @@ if filtered_locations_with_reviews.empty:
     st.stop()
 
 st.sidebar.divider()
-st.sidebar.caption(f"Data last captured on: {reviews_data['REVIEW_DATE'].max()}")
-
-## FILTER DATA
-#filtered_review_data = review_data[review_data['BRAND'] == selected_brand]
-#filtered_review_data = filtered_review_data[filtered_review_data['STATE'].isin(selected_state)]
-#filtered_review_data = filtered_review_data[filtered_review_data['CITY'].isin(selected_city)]
-#filtered_review_data = filtered_review_data[filtered_review_data['ADDRESS'].isin(selected_location)]
-#filtered_review_data = filtered_review_data[filtered_review_data['RATING'].isin(selected_rating)]
-#filtered_review_data = filtered_review_data[filtered_review_data['OVERALL_SENTIMENT'].isin(selected_sentiment)]
+st.sidebar.caption(f"**Data last updated on:** {data_collected_at}.")
 
 ## TABS
 if menu_id == 'About':

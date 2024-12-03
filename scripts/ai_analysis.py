@@ -133,7 +133,7 @@ def ai_analysis(data, attributes, sentences, entities):
         height=300
     )
     fig_avg_rating_per_day.update_traces(mode='lines+markers', hovertemplate='Avg Rating: %{y:.2f}<extra></extra>', line=dict(color='#E6E6E6'), marker=dict(color=color_scale))  
-    fig_avg_rating_per_day.update_layout(xaxis_title=None, yaxis_title=None)
+    fig_avg_rating_per_day.update_layout(xaxis_title=None, yaxis_title=None, hovermode='x')
     st.plotly_chart(fig_avg_rating_per_day, use_container_width=True)
 
     ## AVERAGE DETAILED RATING BY DATE

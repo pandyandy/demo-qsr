@@ -21,10 +21,10 @@ def generate_html(label, main_value, sub_label, sub_value, always_show_subtext=F
         subtext = sub_label 
 
     html_code = f"""
-    <div style='text-align: center; color: black;'>
+    <div style='text-align: center; color: #3A3A3A;'>
         <h1 style='font-size: 16px;'>{label}</h1>
         <span style='font-size: 38px;'>{main_value}</span>
-        <p style='margin:0; color: gray; font-size: 0.8em;'>{subtext}</p>
+        <p style='margin:0; color: #7D7D7D; font-size: 0.8em;'>{subtext}</p>
         <br>
     </div>
     """
