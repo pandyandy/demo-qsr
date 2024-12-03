@@ -48,7 +48,7 @@ attributes = pd.read_csv(st.secrets['attributes_path']) #'entity_attribute_count
 bot_data = pd.read_csv(st.secrets['bot_path'])
 
 attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
-pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
+pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They', 'whataburger', 'Whataburger']
 attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
 attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()
 attributes = attributes[attributes['count'] > 2]
