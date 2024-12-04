@@ -27,7 +27,7 @@ def generate_response(prompt):
         st.error(f"An error occurred during content generation. Please try again.")
         return ''
 
-
+@st.fragment
 def assistant(file_id, assistant_id, bot_data):
     if st.session_state.thread_id is None:
         thread = client.beta.threads.create(

@@ -292,18 +292,6 @@ def ai_analysis(data, attributes, sentences):
 
         ## REVIEW DETAILS
         st.markdown("##### Review Details")
-        data = data[data['REVIEW_TEXT'].notna()]
-        data = data.merge(
-            sentences.groupby('REVIEW_ID').agg(
-                ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
-                CATEGORY=('CATEGORY', lambda x: x[x != 'Unknown'].unique().tolist()),
-                CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: x[x != 'Unknown'].unique().tolist()),
-                TOPIC=('TOPIC', lambda x: x[x != 'Unknown'].unique().tolist())
-            ).reset_index(),
-            on='REVIEW_ID',
-            how='left'
-        )
-
         # Filter data based on selected filters
         unique_review_ids = filtered_sentences['REVIEW_ID'].unique()
         filtered_review_data = data[data['REVIEW_ID'].isin(unique_review_ids)].sort_values('REVIEW_DATE', ascending=False)
@@ -348,4 +336,17 @@ def ai_analysis(data, attributes, sentences):
                     hide_index=True, 
                     use_container_width=True)
     
+
+    data = data[data['REVIEW_TEXT'].notna()]
+    data = data.merge(
+        sentences.groupby('REVIEW_ID').agg(
+            ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
+            CATEGORY=('CATEGORY', lambda x: x.unique().tolist()),
+            CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: x.unique().tolist()),
+            TOPIC=('TOPIC', lambda x: x.unique().tolist())
+        ).reset_index(),
+        on='REVIEW_ID',
+        how='left'
+    )
+
     entity_classification(data, sentences)

@@ -13,7 +13,7 @@ def sentiment_color(val):
     }
     return color_map.get(val, '')
 
-
+@st.fragment
 def support(data, reviews_data):
     st.markdown("<br>", unsafe_allow_html=True)
     filtered_review_data_detailed = data[data['REVIEW_TEXT'].notna()].sort_values('REVIEW_DATE', ascending=False)
