@@ -53,14 +53,15 @@ def assistant(file_id, assistant_id, bot_data):
                             "OVERALL_SENTIMENT: Sentiment analysis result for the feedback (e.g., positive, negative). "
                             "CITY/STATE/POSTAL_CODE: Location details of the place."
                         ),
-                        "attachments": [
-                            {
-                            "file_id": file_id, #file.id,
-                            "tools": [{"type": "code_interpreter"}]
-                            }
-                        ]
+                        #"attachments": [
+                        #    {
+                        #    "file_id": file_id, #file.id,
+                        #    "tools": [{"type": "code_interpreter"}]
+                        #    }
+                        #]
                     }
-                ]
+                ],
+                tool_resources={"code_interpreter": {"file_ids": [file_id]}}
             )
         st.session_state.thread_id = thread.id
 
