@@ -111,14 +111,14 @@ def draw_network(G, pos, top_entities):
 @st.fragment
 def display_network_graph(attributes):
     st.markdown("##### Entity-Attribute Relations")
-    st.caption("_See up to top 20 mentioned entities and their attributes._")
+    st.caption("_See up to top 15 mentioned entities and their attributes._")
     col1, col2 = st.columns([0.9, 0.1], vertical_alignment='center')
-    num_entities = col2.number_input("Select the number of entities", min_value=1, max_value=20, value=5)
+    num_entities = col2.number_input("Select the number of entities", min_value=1, max_value=15, value=5)
     fig = create_network_graph(attributes, num_entities)
     col1.pyplot(fig, use_container_width=True)
 
 
-def ai_analysis(data, attributes, sentences, entities):
+def ai_analysis(data, attributes, sentences):
     ## SENTIMENT COUNT BY DATE
     data['REVIEW_DATE'] = pd.to_datetime(data['REVIEW_DATE']).dt.date
     avg_rating_per_day = data.groupby('REVIEW_DATE')['RATING'].mean().reset_index()
@@ -170,38 +170,77 @@ def ai_analysis(data, attributes, sentences, entities):
 
     ## ENTITY CLASSIFICATION
     @st.fragment
-    def entity_classification(data, sentences, entities):
+    def entity_classification(data, sentences):
         col1, col2, col3 = st.columns([0.3, 0.35, 0.35], gap='medium', vertical_alignment='center')
         with col1:
             st.markdown("##### Classification")
             entities_x = col1.slider("Select the number of entities", min_value=1, max_value=20, value=10)
 
-            category_options = sorted(sentences['CATEGORY'].unique().tolist())
+            categories = {
+                "Food": {
+                    "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
+                    "Menu": ["Comments", "Inquiries"],
+                    "Issues": ["Availability", "Food Safety"]
+                },
+                "People": {
+                    "Team": ["Presentation", "Hospitality"]
+                },
+                "Experience": {
+                    "Payment": ["Cost of Meal", "Pricing Accuracy", "Payment Processing"],
+                    "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process"],
+                    "Loyalty": ["Loyalty"],
+                    "Amenities": ["Amenities"],
+                    "Inquiries": ["Inquiries"],
+                    "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
+                }
+            }
+
+            category_options = list(categories.keys())
+            #category_options = sorted(sentences[sentences['CATEGORY'] != 'Unknown']['CATEGORY'].unique().tolist())
             category = st.multiselect("Select categories", options=category_options, placeholder='All')
             if len(category) > 0:
                 selected_category = category
             else:
                 selected_category = category_options
-            sentences = sentences[sentences['CATEGORY'].isin(selected_category)]
 
-            group_options = sorted(sentences['CATEGORY_GROUP'].unique().tolist())
+            filtered_sentences = sentences[sentences['CATEGORY'].isin(selected_category)]
+
+            groups = []
+            for cat in selected_category:
+                groups.extend(categories[cat].keys())
+            group_options = list(set(groups))
+            
+            #group_options = sorted(filtered_sentences[filtered_sentences['CATEGORY_GROUP'] != 'Unknown']['CATEGORY_GROUP'].unique().tolist())
             group = st.multiselect("Select groups", options=group_options, placeholder='All')
             if len(group) > 0:
                 selected_group = group
+                topics = []
+                for g in selected_group:
+                    for cat in selected_category:
+                        if g in categories[cat]:
+                            topics.extend(categories[cat][g])
+                topic_options = list(set(topics))
             else:
                 selected_group = group_options
-            sentences = sentences[sentences['CATEGORY_GROUP'].isin(selected_group)]
+                topics = []
+                for g in selected_group:
+                    for cat in selected_category:
+                        if g in categories[cat]:
+                            topics.extend(categories[cat][g])
+                topic_options = list(set(topics))
+
+            filtered_sentences = filtered_sentences[filtered_sentences['CATEGORY_GROUP'].isin(selected_group)]
             
-            topic_options = sorted(sentences['TOPIC'].unique().tolist())
+            #topic_options = sorted(filtered_sentences[filtered_sentences['TOPIC'] != 'Unknown']['TOPIC'].unique().tolist())
             topic = st.multiselect("Select topics", options=topic_options, placeholder='All')        
             if len(topic) > 0:
                 selected_topic = topic
             else:
                 selected_topic = topic_options
-            sentences = sentences[sentences['TOPIC'].isin(selected_topic)]
+            filtered_sentences = filtered_sentences[filtered_sentences['TOPIC'].isin(selected_topic)]
 
         with col2:
-            filtered_entities = entities[entities['SENTENCE_ID'].isin(sentences[sentences['SENTENCE_SENTIMENT'] == 'Positive']['SENTENCE_ID'])]
+            filtered_entities = filtered_sentences[filtered_sentences['SENTENCE_SENTIMENT'] == 'Positive']
             positive_entities = filtered_entities['ENTITY'].value_counts().head(entities_x).sort_values(ascending=True)
             if not positive_entities.empty:
                 fig_positive = px.bar(
@@ -226,7 +265,7 @@ def ai_analysis(data, attributes, sentences, entities):
                 st.info("No positive entities found for the selected filters.", icon=':material/info:')
                 
         with col3:
-            filtered_entities = entities[entities['SENTENCE_ID'].isin(sentences[sentences['SENTENCE_SENTIMENT'] == 'Negative']['SENTENCE_ID'])]
+            filtered_entities = filtered_sentences[filtered_sentences['SENTENCE_SENTIMENT'] == 'Negative']
             negative_entities = filtered_entities['ENTITY'].value_counts().head(entities_x).sort_values(ascending=True)
             if not negative_entities.empty:
                 fig_negative = px.bar(
@@ -253,21 +292,20 @@ def ai_analysis(data, attributes, sentences, entities):
 
         ## REVIEW DETAILS
         st.markdown("##### Review Details")
-        # Merge entities and unique values in a single operation to reduce multiple merges
+        data = data[data['REVIEW_TEXT'].notna()]
         data = data.merge(
-            entities.groupby('REVIEW_ID')['ENTITY'].apply(list).reset_index(),
+            sentences.groupby('REVIEW_ID').agg(
+                ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
+                CATEGORY=('CATEGORY', lambda x: x[x != 'Unknown'].unique().tolist()),
+                CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: x[x != 'Unknown'].unique().tolist()),
+                TOPIC=('TOPIC', lambda x: x[x != 'Unknown'].unique().tolist())
+            ).reset_index(),
             on='REVIEW_ID',
             how='left'
-        ).merge(
-            sentences.groupby('REVIEW_ID')[['CATEGORY', 'CATEGORY_GROUP', 'TOPIC']].agg(lambda x: x.unique().tolist()).reset_index(),
-            on='REVIEW_ID',
-            how='left',
-            suffixes=('', '_unique')
         )
-        data = data[data['REVIEW_TEXT'].notna()]
 
         # Filter data based on selected filters
-        unique_review_ids = sentences['REVIEW_ID'].unique()
+        unique_review_ids = filtered_sentences['REVIEW_ID'].unique()
         filtered_review_data = data[data['REVIEW_ID'].isin(unique_review_ids)].sort_values('REVIEW_DATE', ascending=False)
         
         if filtered_review_data.empty:
@@ -310,4 +348,4 @@ def ai_analysis(data, attributes, sentences, entities):
                     hide_index=True, 
                     use_container_width=True)
     
-    entity_classification(data, sentences, entities)
+    entity_classification(data, sentences)

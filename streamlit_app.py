@@ -40,11 +40,10 @@ icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
-locations_data = pd.read_csv(st.secrets['locations_path']) #read_data('out.c-257-qsr-demo.LOCATIONS') #('/data/in/tables/location_review.csv')
+locations_data = pd.read_csv(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])
-sentences_data = pd.read_csv(st.secrets['sentences_path']) #read_data('out.c-257-qsr-demo.REVIEW_SENTENCE')
-entities_data = pd.read_csv(st.secrets['entities_path']) #read_data('out.c-257-qsr-demo.REVIEW_ENTITY')
-attributes = pd.read_csv(st.secrets['attributes_path']) #'entity_attribute_counts.csv') #'/data/in/tables/relations.csv')
+sentences_data = pd.read_csv(st.secrets['sentences_path'])
+attributes = pd.read_csv(st.secrets['attributes_path'])
 bot_data = pd.read_csv(st.secrets['bot_path'])
 
 attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
@@ -65,8 +64,12 @@ st.sidebar.markdown(
 
 ## FILTERS
 # Brand Selection
-brand_options = locations_data['BRAND'].unique().tolist()
-brand = st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
+if st.secrets.get('all_brands', 'True') == 'True':
+    brand_options = locations_data['BRAND'].unique().tolist()
+    brand = st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
+else:
+    brand = st.secrets['brand_filter']
+
 locations_data = locations_data[locations_data['BRAND'] == brand]
 location_count_total = len(locations_data)
 data_collected_at = locations_data['DATA_COLLECTED_AT'].max()
@@ -136,8 +139,8 @@ if date_selection is None:
     end_date = max_date
 elif date_selection == 'Other':
     start_date, end_date = st.sidebar.slider('Select date range', value=[min_date.date(), max_date.date()], min_value=min_date.date(), max_value=max_date.date(), key='date_input')
-    start_date = pd.to_datetime(start_date)  # Convert to Timestamp
-    end_date = pd.to_datetime(end_date).replace(hour=23, minute=59)  # Convert to Timestamp and set time to 23:59
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date).replace(hour=23, minute=59)
 else:
     end_date = pd.to_datetime('today')
     if date_selection == 'Last Week':
@@ -179,7 +182,7 @@ if menu_id == 'Overview':
 
 if menu_id == 'AI Analysis':
     metrics(location_count_total, review_count_total, avg_rating_total, filtered_locations_with_reviews, show_pie=True)
-    ai_analysis(filtered_locations_with_reviews, attributes, sentences_data_filtered, entities_data)
+    ai_analysis(filtered_locations_with_reviews, attributes, sentences_data_filtered)
 
 if menu_id == 'Support':
     support(filtered_locations_with_reviews, reviews_data)
