@@ -24,7 +24,7 @@ LOGO_URL=st.secrets['LOGO_URL']
 session_defaults = {
     "thread_id": None,
     "messages": [{'role': 'assistant', 'content': 'Welcome! How can I assist you today?'}],
-    "table_written": False,
+#    "table_written": False,
     "new_prompt": None,
     "instruction": '',
     "regenerate_clicked": False,
@@ -61,42 +61,60 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
+# Merge locations and reviews data once and save to session state
+if 'locations_reviews_merged' not in st.session_state:
+    st.session_state['locations_reviews_merged'] = pd.merge(locations_data, reviews_data, on='PLACE_ID', how='inner')
+
+locations_reviews_merged = st.session_state['locations_reviews_merged']
+
+# if 'all_data_merged' not in st.session_state:
+#     st.session_state['all_data_merged'] = locations_reviews_merged.merge(
+#         sentences_data.groupby('REVIEW_ID').agg(
+#             ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
+#             CATEGORY=('CATEGORY', lambda x: x.unique().tolist()),
+#             CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: x.unique().tolist()),
+#             TOPIC=('TOPIC', lambda x: x.unique().tolist())
+#         ).reset_index(),
+#         on='REVIEW_ID',
+#         how='left'
+#     )
+# all_data_merged = st.session_state['all_data_merged']
+
 ## FILTERS
 # Brand Selection
 if st.secrets.get('all_brands', 'True') == 'True':
-    brand_options = locations_data['BRAND'].unique().tolist()
+    brand_options = locations_reviews_merged['BRAND'].unique().tolist()
     brand = st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
 else:
     brand = st.secrets['brand_filter']
 
-locations_data = locations_data[locations_data['BRAND'] == brand]
-location_count_total = len(locations_data)
-data_collected_at = locations_data['DATA_COLLECTED_AT'].max()
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['BRAND'] == brand]
+location_count_total = len(locations_reviews_merged)
+data_collected_at = locations_reviews_merged['DATA_COLLECTED_AT'].max()
 
-# Merge locations and reviews data and get the count of reviews data based on selected brand
-merged_data = pd.merge(locations_data, reviews_data, on='PLACE_ID', how='inner')
-review_count_total = len(merged_data[merged_data['BRAND'] == brand])
-avg_rating_total = merged_data['RATING'].mean().round(2)
+# Calculate review count and average rating based on selected brand
+review_count_total = len(locations_reviews_merged[locations_reviews_merged['BRAND'] == brand])
+avg_rating_total = locations_reviews_merged['RATING'].mean().round(2)
 
 # State Selection
-state_options = sorted(locations_data['STATE'].unique().tolist())
+state_options = sorted(locations_reviews_merged['STATE'].unique().tolist())
 state = st.sidebar.multiselect('Select a state', state_options, placeholder='All')
 if len(state) > 0:
     selected_state = state
 else:
     selected_state = state_options
-locations_data = locations_data[locations_data['STATE'].isin(selected_state)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['STATE'].isin(selected_state)]
 
 # City Selection
-city_options = sorted(locations_data['CITY'].unique().tolist())
+city_options = sorted(locations_reviews_merged['CITY'].unique().tolist())
 city = st.sidebar.multiselect('Select a city', city_options, placeholder='All')
 if len(city) > 0:
     selected_city = city
-    location_options = sorted(locations_data[locations_data['CITY'].isin(selected_city)]['ADDRESS'].unique().tolist())
+    location_options = sorted(locations_reviews_merged[locations_reviews_merged['CITY'].isin(selected_city)]['ADDRESS'].unique().tolist())
 else:
     selected_city = city_options
-    location_options = sorted(locations_data[locations_data['STATE'].isin(selected_state)]['ADDRESS'].unique().tolist())
-locations_data = locations_data[locations_data['CITY'].isin(selected_city)]
+    location_options = sorted(locations_reviews_merged[locations_reviews_merged['STATE'].isin(selected_state)]['ADDRESS'].unique().tolist())
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['CITY'].isin(selected_city)]
 
 # Location Selection
 location = st.sidebar.multiselect('Select a location', location_options, placeholder='All')
@@ -104,34 +122,34 @@ if len(location) > 0:
     selected_location = location
 else:
     selected_location = location_options
-locations_data = locations_data[locations_data['ADDRESS'].isin(selected_location)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['ADDRESS'].isin(selected_location)]
 
 # Filter reviews based on selected locations
-filtered_reviews = reviews_data[reviews_data['PLACE_ID'].isin(locations_data['PLACE_ID'])]
+#filtered_reviews = reviews_data[reviews_data['PLACE_ID'].isin(locations_data['PLACE_ID'])]
 
 # Sentiment Selection
-sentiment_options = sorted(filtered_reviews['OVERALL_SENTIMENT'].unique().tolist())
+sentiment_options = sorted(locations_reviews_merged['OVERALL_SENTIMENT'].unique().tolist())
 sentiment = st.sidebar.multiselect('Select a sentiment', sentiment_options, placeholder='All')
 if len(sentiment) > 0:
     selected_sentiment = sentiment
 else:
     selected_sentiment = sentiment_options
-filtered_reviews = filtered_reviews[filtered_reviews['OVERALL_SENTIMENT'].isin(selected_sentiment)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['OVERALL_SENTIMENT'].isin(selected_sentiment)]
 
 # Rating Selection
-rating_options = sorted(filtered_reviews['RATING'].unique().tolist())
+rating_options = sorted(locations_reviews_merged['RATING'].unique().tolist())
 rating = st.sidebar.multiselect('Select a review rating', rating_options, placeholder='All')
 if len(rating) > 0:
     selected_rating = rating
 else:
     selected_rating = rating_options
-filtered_reviews = filtered_reviews[filtered_reviews['RATING'].isin(selected_rating)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['RATING'].isin(selected_rating)]
 
 # Date Selection
 date_options = ['Last Week', 'Last Month', 'Last 3 Months', 'All Time', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=None, placeholder='All')
-min_date = pd.to_datetime(filtered_reviews['REVIEW_DATE'].min())
-max_date = pd.to_datetime(filtered_reviews['REVIEW_DATE'].max())
+min_date = pd.to_datetime(locations_reviews_merged['REVIEW_DATE'].min())
+max_date = pd.to_datetime(locations_reviews_merged['REVIEW_DATE'].max())
 
 if date_selection is None:
     start_date = min_date
@@ -154,13 +172,13 @@ else:
 selected_date_range = (start_date, end_date)
 
 # Convert REVIEW_DATE to datetime for comparison
-filtered_reviews['REVIEW_DATE'] = pd.to_datetime(filtered_reviews['REVIEW_DATE'])
-filtered_reviews = filtered_reviews[filtered_reviews['REVIEW_DATE'].between(selected_date_range[0], selected_date_range[1])]
+locations_reviews_merged['REVIEW_DATE'] = pd.to_datetime(locations_reviews_merged['REVIEW_DATE'])
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['REVIEW_DATE'].between(selected_date_range[0], selected_date_range[1])]
 
-filtered_locations_with_reviews = filtered_reviews.merge(locations_data, on='PLACE_ID', how='inner')
-sentences_data_filtered = sentences_data[sentences_data['REVIEW_ID'].isin(filtered_locations_with_reviews['REVIEW_ID'])]
+#filtered_locations_with_reviews = locations_reviews_merged.merge(locations_data, on='PLACE_ID', how='inner')
+sentences_data_filtered = sentences_data[sentences_data['REVIEW_ID'].isin(locations_reviews_merged['REVIEW_ID'])]
 
-if filtered_locations_with_reviews.empty:
+if locations_reviews_merged.empty:
     st.info('No data available for the selected filters.', icon=':material/info:')
     st.stop()
 
@@ -172,19 +190,19 @@ if menu_id == 'About':
     introduction()
     
 if menu_id == 'Locations':    
-    metrics(location_count_total, review_count_total, avg_rating_total, filtered_locations_with_reviews)
-    locations(filtered_locations_with_reviews)
+    metrics(location_count_total, review_count_total, avg_rating_total, locations_reviews_merged)
+    locations(locations_reviews_merged)
 
 if menu_id == 'Overview':
-    metrics(location_count_total, review_count_total, avg_rating_total, filtered_locations_with_reviews)
-    overview(filtered_locations_with_reviews)
+    metrics(location_count_total, review_count_total, avg_rating_total, locations_reviews_merged)
+    overview(locations_reviews_merged)
 
 if menu_id == 'AI Analysis':
-    metrics(location_count_total, review_count_total, avg_rating_total, filtered_locations_with_reviews, show_pie=True)
-    ai_analysis(filtered_locations_with_reviews, attributes, sentences_data_filtered)
+    metrics(location_count_total, review_count_total, avg_rating_total, locations_reviews_merged, show_pie=True)
+    ai_analysis(locations_reviews_merged, attributes, sentences_data_filtered)
 
 if menu_id == 'Support':
-    support(filtered_locations_with_reviews, reviews_data)
+    support(locations_reviews_merged, reviews_data)
 
 if menu_id == 'Assistant':
     assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'], bot_data=bot_data)

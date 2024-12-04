@@ -5,6 +5,7 @@ import plotly.express as px
 rating_colors_index = {'0': '#B3B3B3', '1': '#EA4335', '2': '#e98f41', '3': '#FBBC05', '4': '#a5c553', '5': '#34A853'}
 rating_colors = {0: '#B3B3B3', 1: '#EA4335', 2: '#e98f41', 3: '#FBBC05', 4: '#a5c553', 5: '#34A853'}
 
+@st.fragment
 def overview(data):
     data_rating_sorted = (
         data

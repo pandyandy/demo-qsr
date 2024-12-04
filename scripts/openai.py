@@ -30,47 +30,48 @@ def generate_response(prompt):
 @st.fragment
 def assistant(file_id, assistant_id, bot_data):
     if st.session_state.thread_id is None:
-        thread = client.beta.threads.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": (
-                        "To help you navigate the CSV file, here is the description of some important columns: "
-                        "REVIEW_ID: Unique identifier for the feedback. "
-                        "FEEDBACK_CHANNEL: Source channel of the feedback (e.g., platform or app). "
-                        "PLACE_ID: Unique identifier for the place being reviewed. "
-                        "PLACE_TOTAL_SCORE: The total score of the place based on reviews. "
-                        "PLACE_REVIEWS_COUNT: Number of reviews for the place. "
-                        "LATITUDE/LONGITUDE: Geographical coordinates of the place. "   
-                        "REVIEWER_NAME: Name of the customer. "
-                        "REVIEW_DATE: Date when the feedback was given. " 
-                        "RATING: The rating given by the reviewer (on a scale). "
-                        "REVIEW_CONTEXT_MEAL_TYPE: Type of meal mentioned in the review. "
-                        "REVIEW_CONTEXT_SERVICE: Type of service mentioned. "
-                        "REVIEW_DETAILED_FOOD/SERVICE/ATMOSPHERE: Specific ratings for food, service, and atmosphere. "  
-                        "REVIEW_TEXT: Text content of the review. "
-                        "OVERALL_SENTIMENT: Sentiment analysis result for the feedback (e.g., positive, negative). "
-                        "CITY/STATE/POSTAL_CODE: Location details of the place."
-                    ),
-                    "attachments": [
-                        {
-                        "file_id": file_id, #file.id,
-                        "tools": [{"type": "code_interpreter"}]
-                        }
-                    ]
-                }
-            ]
-        )
+        with st.spinner("Preparing... 🤖"):
+            thread = client.beta.threads.create(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": (
+                            "To help you navigate the CSV file, here is the description of some important columns: "
+                            "REVIEW_ID: Unique identifier for the feedback. "
+                            "FEEDBACK_CHANNEL: Source channel of the feedback (e.g., platform or app). "
+                            "PLACE_ID: Unique identifier for the place being reviewed. "
+                            "PLACE_TOTAL_SCORE: The total score of the place based on reviews. "
+                            "PLACE_REVIEWS_COUNT: Number of reviews for the place. "
+                            "LATITUDE/LONGITUDE: Geographical coordinates of the place. "   
+                            "REVIEWER_NAME: Name of the customer. "
+                            "REVIEW_DATE: Date when the feedback was given. " 
+                            "RATING: The rating given by the reviewer (on a scale). "
+                            "REVIEW_CONTEXT_MEAL_TYPE: Type of meal mentioned in the review. "
+                            "REVIEW_CONTEXT_SERVICE: Type of service mentioned. "
+                            "REVIEW_DETAILED_FOOD/SERVICE/ATMOSPHERE: Specific ratings for food, service, and atmosphere. "  
+                            "REVIEW_TEXT: Text content of the review. "
+                            "OVERALL_SENTIMENT: Sentiment analysis result for the feedback (e.g., positive, negative). "
+                            "CITY/STATE/POSTAL_CODE: Location details of the place."
+                        ),
+                        "attachments": [
+                            {
+                            "file_id": file_id, #file.id,
+                            "tools": [{"type": "code_interpreter"}]
+                            }
+                        ]
+                    }
+                ]
+            )
         st.session_state.thread_id = thread.id
 
-    if not st.session_state.table_written:
-        df_log = pd.DataFrame({
-            'thread_id': [st.session_state.thread_id],
-            'created_at': [datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
-        })
-
-        write_table(table_id='in.c-257-bot-log.logging', df=df_log, is_incremental=True)
-        st.session_state.table_written = True
+    # if not st.session_state.table_written:
+    #     df_log = pd.DataFrame({
+    #         'thread_id': [st.session_state.thread_id],
+    #         'created_at': [datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
+    #     })
+    #
+    #     write_table(table_id='in.c-257-bot-log.logging', df=df_log, is_incremental=True)
+    #     st.session_state.table_written = True
 
     with st.expander("Data"):
         st.dataframe(bot_data, hide_index=True)
