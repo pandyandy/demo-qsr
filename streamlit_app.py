@@ -20,20 +20,19 @@ ASSISTANT_ID=st.secrets['ASSISTANT_ID']
 FILE_ID=st.secrets['FILE_ID']
 LOGO_URL=st.secrets['LOGO_URL']
 
-if 'thread_id' not in st.session_state:
-    st.session_state.thread_id = None
-if 'messages' not in st.session_state:
-    st.session_state.messages = [{'role': 'assistant', 'content': 'Welcome! How can I assist you today?'}]
-if 'table_written' not in st.session_state:
-    st.session_state.table_written = False
-if 'new_prompt' not in st.session_state:
-    st.session_state.new_prompt = None
-if 'instruction' not in st.session_state:
-    st.session_state.instruction = ''
-if 'regenerate_clicked' not in st.session_state:
-    st.session_state.regenerate_clicked = False
-if 'generated_responses' not in st.session_state:
-    st.session_state['generated_responses'] = {}
+# Initialize session state variables
+session_defaults = {
+    "thread_id": None,
+    "messages": [{'role': 'assistant', 'content': 'Welcome! How can I assist you today?'}],
+    "table_written": False,
+    "new_prompt": None,
+    "instruction": '',
+    "regenerate_clicked": False,
+    "generated_responses": {}
+}
+for key, value in session_defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
 
 options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
 icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
