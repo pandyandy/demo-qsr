@@ -103,10 +103,10 @@ if len(state) > 0:
     selected_state = state
 else:
     selected_state = state_options
-locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['STATE'].isin(selected_state)]
 
 # City Selection
-city_options = sorted(locations_reviews_merged['CITY'].unique().tolist())
+#city_options = sorted(locations_reviews_merged['CITY'].unique().tolist())
+city_options = sorted(locations_reviews_merged[locations_reviews_merged['STATE'].isin(selected_state)]['CITY'].unique().tolist())
 city = st.sidebar.multiselect('Select a city', city_options, placeholder='All')
 if len(city) > 0:
     selected_city = city
@@ -114,7 +114,6 @@ if len(city) > 0:
 else:
     selected_city = city_options
     location_options = sorted(locations_reviews_merged[locations_reviews_merged['STATE'].isin(selected_state)]['ADDRESS'].unique().tolist())
-locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['CITY'].isin(selected_city)]
 
 # Location Selection
 location = st.sidebar.multiselect('Select a location', location_options, placeholder='All')
@@ -122,7 +121,6 @@ if len(location) > 0:
     selected_location = location
 else:
     selected_location = location_options
-locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['ADDRESS'].isin(selected_location)]
 
 # Filter reviews based on selected locations
 #filtered_reviews = reviews_data[reviews_data['PLACE_ID'].isin(locations_data['PLACE_ID'])]
@@ -134,7 +132,6 @@ if len(sentiment) > 0:
     selected_sentiment = sentiment
 else:
     selected_sentiment = sentiment_options
-locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['OVERALL_SENTIMENT'].isin(selected_sentiment)]
 
 # Rating Selection
 rating_options = sorted(locations_reviews_merged['RATING'].unique().tolist())
@@ -143,7 +140,6 @@ if len(rating) > 0:
     selected_rating = rating
 else:
     selected_rating = rating_options
-locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['RATING'].isin(selected_rating)]
 
 # Date Selection
 date_options = ['Last Week', 'Last Month', 'Last 3 Months', 'All Time', 'Other']
@@ -168,8 +164,16 @@ else:
         start_date = end_date - pd.DateOffset(months=3)
     elif date_selection == 'All Time':
         start_date = min_date
-
 selected_date_range = (start_date, end_date)
+
+
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['STATE'].isin(selected_state)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['CITY'].isin(selected_city)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['ADDRESS'].isin(selected_location)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['OVERALL_SENTIMENT'].isin(selected_sentiment)]
+locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['RATING'].isin(selected_rating)]
+
+
 
 # Convert REVIEW_DATE to datetime for comparison
 locations_reviews_merged['REVIEW_DATE'] = pd.to_datetime(locations_reviews_merged['REVIEW_DATE'])
