@@ -28,7 +28,7 @@ def generate_response(prompt):
         return ''
 
 @st.fragment
-def assistant(file_id, assistant_id, bot_data):
+def assistant(file_id, assistant_id): #bot_data
     if st.session_state.thread_id is None:
         thread = client.beta.threads.create(
             messages=[
