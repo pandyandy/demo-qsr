@@ -129,7 +129,7 @@ def ai_analysis(data, attributes, sentences):
         x='REVIEW_DATE',
         y='RATING',
         labels={'RATING': 'Average Rating', 'REVIEW_DATE': 'Date'},
-        title='Average Rating per Date',
+        title='Average Rating by Date',
         height=300
     )
     fig_avg_rating_per_day.update_traces(mode='lines+markers', hovertemplate='Avg Rating: %{y:.2f}<extra></extra>', line=dict(color='#E6E6E6'), marker=dict(color=color_scale))  
