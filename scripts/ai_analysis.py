@@ -341,9 +341,9 @@ def ai_analysis(data, attributes, sentences):
     data = data.merge(
         sentences.groupby('REVIEW_ID').agg(
             ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
-            CATEGORY=('CATEGORY', lambda x: x.unique().tolist()),
-            CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: x.unique().tolist()),
-            TOPIC=('TOPIC', lambda x: x.unique().tolist())
+            CATEGORY=('CATEGORY', lambda x: [cat for cat in x.unique().tolist() if cat != 'Unknown']),
+            CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: [group for group in x.unique().tolist() if group != 'Unknown']),
+            TOPIC=('TOPIC', lambda x: [topic for topic in x.unique().tolist() if topic != 'Unknown'])
         ).reset_index(),
         on='REVIEW_ID',
         how='left'
