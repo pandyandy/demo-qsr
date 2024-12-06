@@ -108,7 +108,10 @@ st.sidebar.markdown(
 
 ## FILTERS
 # Brand Selection
-brand_options = locations_data['BRAND'].unique().tolist()
+
+if 'brand_options' not in st.session_state:
+    st.session_state.brand_options = locations_data['BRAND'].unique().tolist()
+brand_options = st.session_state.brand_options
 if st.secrets.get('all_brands', 'True') == 'True':
     #brand_options = db.execute("SELECT DISTINCT BRAND FROM locations;").fetchdf()['BRAND'].tolist()
     brand = st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')#
@@ -231,21 +234,18 @@ query = """
     AND RATING IN ?
     AND REVIEW_DATE BETWEEN ? AND ?
 """
-
 locations_reviews_sentences_merged = db.execute(
     query,
     [selected_state, selected_city, selected_location, selected_sentiment, selected_rating, start_date, end_date]
 ).fetchdf()
 
+#filtered_sentences = db.execute("SELECT * FROM sentences WHERE REVIEW_ID IN ?", [locations_reviews_sentences_merged['REVIEW_ID'].tolist()]).fetchdf()
+
 attributes = db.execute("SELECT * FROM filtered_attributes").fetchdf()
-#st.write(locations_reviews_merged)
-
-# Convert REVIEW_DATE to datetime for comparison
-#locations_reviews_merged['REVIEW_DATE'] = pd.to_datetime(locations_reviews_merged['REVIEW_DATE'])
-#locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['REVIEW_DATE'].between(selected_date_range[0], selected_date_range[1])]
-
-#filtered_locations_with_reviews = locations_reviews_merged.merge(locations_data, on='PLACE_ID', how='inner')
-sentences_data_filtered = db.execute("SELECT * FROM sentences WHERE REVIEW_ID IN (SELECT REVIEW_ID FROM locations_reviews_sentences_merged)").fetchdf()
+sentences = db.execute("SELECT * FROM sentences").fetchdf()
+filtered_sentences = sentences[sentences['REVIEW_ID'].isin(locations_reviews_sentences_merged['REVIEW_ID'])]
+# Take review_id from the filtered df
+#sentences_data_filtered = db.execute("SELECT * FROM sentences WHERE REVIEW_ID IN ?", [review_ids]).fetchdf()
 
 if locations_reviews_sentences_merged.empty:
     st.info('No data available for the selected filters.', icon=':material/info:')
@@ -268,7 +268,7 @@ if menu_id == 'Overview':
 
 if menu_id == 'AI Analysis':
     metrics(location_count_total, review_count_total, avg_rating_total, locations_reviews_sentences_merged, show_pie=True)
-    ai_analysis(locations_reviews_sentences_merged, attributes, sentences_data_filtered)
+    ai_analysis(locations_reviews_sentences_merged, attributes, filtered_sentences)
 
 if menu_id == 'Support':
     support(locations_reviews_sentences_merged, reviews_data)

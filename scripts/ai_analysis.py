@@ -121,7 +121,6 @@ def display_network_graph(attributes):
 
 def ai_analysis(data, attributes, sentences):
     ## SENTIMENT COUNT BY DATE
-    db = duckdb.connect(database=':memory:')
     data['REVIEW_DATE'] = pd.to_datetime(data['REVIEW_DATE']).dt.date
     avg_rating_per_day = data.groupby('REVIEW_DATE')['RATING'].mean().reset_index()
     color_scale = avg_rating_per_day['RATING'].apply(lambda x: '#EA4335' if x < 1.5 else '#e98f41' if x < 2.5 else '#FBBC05' if x < 3.6 else '#a5c553' if x < 4.5 else '#34A853').tolist()
@@ -244,6 +243,7 @@ def ai_analysis(data, attributes, sentences):
                 (sentences['CATEGORY_GROUP'].isin(selected_group)) &
                 (sentences['TOPIC'].isin(selected_topic))
             ]
+            #st.write(filtered_sentences)
             # filtered_sentences = db.execute("""
             #     SELECT * FROM sentences
             #     WHERE CATEGORY IN ({})
