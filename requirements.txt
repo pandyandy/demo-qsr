@@ -7,3 +7,4 @@ kbcstorage
 keboola-streamlit
 networkx
 matplotlib
+duckdb

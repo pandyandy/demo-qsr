@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import duckdb
 import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.express as px
@@ -120,6 +121,7 @@ def display_network_graph(attributes):
 
 def ai_analysis(data, attributes, sentences):
     ## SENTIMENT COUNT BY DATE
+    db = duckdb.connect(database=':memory:')
     data['REVIEW_DATE'] = pd.to_datetime(data['REVIEW_DATE']).dt.date
     avg_rating_per_day = data.groupby('REVIEW_DATE')['RATING'].mean().reset_index()
     color_scale = avg_rating_per_day['RATING'].apply(lambda x: '#EA4335' if x < 1.5 else '#e98f41' if x < 2.5 else '#FBBC05' if x < 3.6 else '#a5c553' if x < 4.5 else '#34A853').tolist()
@@ -203,8 +205,7 @@ def ai_analysis(data, attributes, sentences):
             else:
                 selected_category = category_options
 
-            filtered_sentences = sentences[sentences['CATEGORY'].isin(selected_category)]
-
+            
             groups = []
             for cat in selected_category:
                 groups.extend(categories[cat].keys())
@@ -229,7 +230,6 @@ def ai_analysis(data, attributes, sentences):
                             topics.extend(categories[cat][g])
                 topic_options = list(set(topics))
 
-            filtered_sentences = filtered_sentences[filtered_sentences['CATEGORY_GROUP'].isin(selected_group)]
             
             #topic_options = sorted(filtered_sentences[filtered_sentences['TOPIC'] != 'Unknown']['TOPIC'].unique().tolist())
             topic = st.multiselect("Select topics", options=topic_options, placeholder='All')        
@@ -237,7 +237,23 @@ def ai_analysis(data, attributes, sentences):
                 selected_topic = topic
             else:
                 selected_topic = topic_options
-            filtered_sentences = filtered_sentences[filtered_sentences['TOPIC'].isin(selected_topic)]
+                
+
+            filtered_sentences = sentences[
+                (sentences['CATEGORY'].isin(selected_category)) &
+                (sentences['CATEGORY_GROUP'].isin(selected_group)) &
+                (sentences['TOPIC'].isin(selected_topic))
+            ]
+            # filtered_sentences = db.execute("""
+            #     SELECT * FROM sentences
+            #     WHERE CATEGORY IN ({})
+            #     AND CATEGORY_GROUP IN ({})
+            #     AND TOPIC IN ({})
+            # """.format(
+            #     ','.join(['?'] * len(selected_category)),
+            #     ','.join(['?'] * len(selected_group)),
+            #     ','.join(['?'] * len(selected_topic))
+            # ), selected_category + selected_group + selected_topic).fetchdf()
 
         with col2:
             filtered_entities = filtered_sentences[filtered_sentences['SENTENCE_SENTIMENT'] == 'Positive']
@@ -336,17 +352,18 @@ def ai_analysis(data, attributes, sentences):
                     hide_index=True, 
                     use_container_width=True)
     
-
-    data = data[data['REVIEW_TEXT'].notna()]
-    data = data.merge(
-        sentences.groupby('REVIEW_ID').agg(
-            ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
-            CATEGORY=('CATEGORY', lambda x: [cat for cat in x.unique().tolist() if cat != 'Unknown']),
-            CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: [group for group in x.unique().tolist() if group != 'Unknown']),
-            TOPIC=('TOPIC', lambda x: [topic for topic in x.unique().tolist() if topic != 'Unknown'])
-        ).reset_index(),
-        on='REVIEW_ID',
-        how='left'
-    )
-
     entity_classification(data, sentences)
+
+    # data = db.execute("""
+    #     SELECT d.*, s.ENTITY, s.CATEGORY, s.CATEGORY_GROUP, s.TOPIC
+    #     FROM (SELECT * FROM data WHERE REVIEW_TEXT IS NOT NULL) AS d
+    #     LEFT JOIN (
+    #         SELECT REVIEW_ID,
+    #             ARRAY_AGG(DISTINCT ENTITY) AS ENTITY,
+    #             ARRAY_AGG(DISTINCT CASE WHEN CATEGORY != 'Unknown' THEN CATEGORY END) AS CATEGORY,
+    #             ARRAY_AGG(DISTINCT CASE WHEN CATEGORY_GROUP != 'Unknown' THEN CATEGORY_GROUP END) AS CATEGORY_GROUP,
+    #             ARRAY_AGG(DISTINCT CASE WHEN TOPIC != 'Unknown' THEN TOPIC END) AS TOPIC
+    #         FROM sentences
+    #         GROUP BY REVIEW_ID
+    #     ) AS s ON d.REVIEW_ID = s.REVIEW_ID
+    # """).fetchdf()
