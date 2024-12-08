@@ -3,6 +3,7 @@ import pandas as pd
 
 from scripts.openai import generate_response
 from scripts.sapi import write_table
+from scripts.db_utils import get_db_connection
 
 def sentiment_color(val):
     color_map = {
@@ -16,15 +17,15 @@ def sentiment_color(val):
 @st.fragment
 def support(data, reviews_data):
     st.markdown("<br>", unsafe_allow_html=True)
-    filtered_review_data_detailed = data.sort_values('REVIEW_DATE', ascending=False)
-    if filtered_review_data_detailed.empty:
-        st.info('No reviews with feedback text available for the selected filters.', icon=':material/info:')
-        st.stop()
-    filtered_review_data_detailed['SELECT'] = [True] + [False] * (len(filtered_review_data_detailed) - 1)
+    #filtered_review_data_detailed = data.sort_values('REVIEW_DATE', ascending=False)
+    #if filtered_review_data_detailed.empty:
+    #    st.info('No reviews with feedback text available for the selected filters.', icon=':material/info:')
+    #    st.stop()
+    data['SELECT'] = [True] + [False] * (len(data) - 1)
     #filtered_review_data_detailed['RATING'] = filtered_review_data_detailed['RATING'].astype(int)
-    filtered_review_data_detailed['CUSTOMER_SUCCESS_NOTES'] = filtered_review_data_detailed['CUSTOMER_SUCCESS_NOTES'].fillna('')
+    #filtered_review_data_detailed['CUSTOMER_SUCCESS_NOTES'] = filtered_review_data_detailed['CUSTOMER_SUCCESS_NOTES'].fillna('')
     df_to_edit = st.data_editor(
-        filtered_review_data_detailed[['SELECT', 'REVIEW_ID','REVIEWER_NAME', 'OVERALL_SENTIMENT', 'REVIEW_TEXT', 'RATING', 'ADDRESS',
+        data[['SELECT', 'REVIEW_ID','REVIEWER_NAME', 'OVERALL_SENTIMENT', 'REVIEW_TEXT', 'RATING', 'ADDRESS',
                                     'REVIEW_DATE', 'CUSTOMER_SUCCESS_NOTES', 'REVIEW_URL', 'STATUS', 'RESPONSE']],
                                     #.style.map(sentiment_color, subset=["OVERALL_SENTIMENT"]),
         column_order=('SELECT', 'REVIEW_DATE', 'REVIEWER_NAME', 'RATING', 'REVIEW_TEXT', 'OVERALL_SENTIMENT', 'STATUS', 'ADDRESS', 'REVIEW_URL', 'RESPONSE', 'CUSTOMER_SUCCESS_NOTES'), 
@@ -137,8 +138,8 @@ Please provide an updated response incorporating the additional instruction.
         
                 if col3.button('💾 Save response', use_container_width=True):
                     review_id = selected_review['REVIEW_ID']
-                    filtered_review_data_detailed['RESPONSE'] = filtered_review_data_detailed['RESPONSE'].astype('object')
-                    filtered_review_data_detailed.loc[filtered_review_data_detailed['REVIEW_ID'] == review_id, 'RESPONSE'] = edited_response
+                    data['RESPONSE'] = data['RESPONSE'].astype('object')
+                    data.loc[data['REVIEW_ID'] == review_id, 'RESPONSE'] = edited_response
                     
                     try:
                         update_df = pd.DataFrame({
@@ -159,10 +160,22 @@ Please provide an updated response incorporating the additional instruction.
                         
                         update_df = reviews_data[reviews_data['REVIEW_ID'] == review_id].copy()
                         write_table(st.secrets['reviews_path'], update_df, is_incremental=True)
+                        
+                        # Update the DuckDB locations_reviews_sentences_merged table based on REVIEW_ID
+                        #db = get_db_connection()
+                        #db.execute("""
+                        #    UPDATE locations_reviews_sentences_merged 
+                        #    SET RESPONSE = ?, STATUS = ?, CUSTOMER_SUCCESS_NOTES = ?
+                        #    WHERE REVIEW_ID = ?
+                        #""", (edited_response, 
+                        #      '✔️ Resolved' if selected_review['STATUS'] == '🌱 New' else selected_review['STATUS'], 
+                        #      selected_review['CUSTOMER_SUCCESS_NOTES'], 
+                        #      review_id))
                         st.success('Response saved successfully!')
+                        #st.rerun()
                     except Exception as e:
                         st.error(f'Failed to save response: {str(e)}')
-                        
+
     elif selected_sum > 1:
         st.info('Select only one review to generate a response.')
     else:

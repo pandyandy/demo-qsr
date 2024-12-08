@@ -241,6 +241,7 @@ def ai_analysis(data):
             #     FROM sentences
             #     WHERE REVIEW_ID IN (SELECT REVIEW_ID FROM filtered_data)
             # """).fetchdf()
+
             filtered_sentences = db.execute("""
                 SELECT *
                 FROM sentences
@@ -307,10 +308,24 @@ def ai_analysis(data):
 
         ## REVIEW DETAILS
         st.markdown("##### Review Details")
-        # Filter data based on selected filters
-        unique_review_ids = filtered_sentences['REVIEW_ID'].unique()
-        filtered_review_data = data[data['REVIEW_ID'].isin(unique_review_ids)].sort_values('REVIEW_DATE', ascending=False)
-        
+
+        #filtered_review_data = data.merge(filtered_sentences[['REVIEW_ID']], on='REVIEW_ID', how='inner').sort_values('REVIEW_DATE', ascending=False)
+        db.execute("""
+            CREATE OR REPLACE TABLE locations_reviews_sentences AS 
+            SELECT d.*, s.CATEGORY, s.CATEGORY_GROUP, s.TOPIC, s.ENTITY
+            FROM data d
+            INNER JOIN (
+                    SELECT REVIEW_ID,
+                        ARRAY_AGG(DISTINCT CASE WHEN CATEGORY != 'Unknown' AND CATEGORY IS NOT NULL AND CATEGORY != '' THEN CATEGORY END) AS CATEGORY,
+                        ARRAY_AGG(DISTINCT CASE WHEN CATEGORY_GROUP != 'Unknown' AND CATEGORY_GROUP IS NOT NULL AND CATEGORY_GROUP != '' THEN CATEGORY_GROUP END) AS CATEGORY_GROUP,
+                        ARRAY_AGG(DISTINCT CASE WHEN TOPIC != 'Unknown' AND TOPIC IS NOT NULL AND TOPIC != '' THEN TOPIC END) AS TOPIC,
+                        ARRAY_AGG(DISTINCT ENTITY) AS ENTITY
+                    FROM filtered_sentences
+                    GROUP BY REVIEW_ID
+            ) AS s ON d.REVIEW_ID = s.REVIEW_ID
+        """)
+        filtered_review_data = db.execute("SELECT * FROM locations_reviews_sentences").fetchdf()
+
         if filtered_review_data.empty:
             st.info("No reviews with feedback text available for the selected filters.", icon=':material/info:')
             st.stop()
@@ -352,17 +367,3 @@ def ai_analysis(data):
                     use_container_width=True)
     
     entity_classification(data)
-
-    # data = db.execute("""
-    #     SELECT d.*, s.ENTITY, s.CATEGORY, s.CATEGORY_GROUP, s.TOPIC
-    #     FROM (SELECT * FROM data WHERE REVIEW_TEXT IS NOT NULL) AS d
-    #     LEFT JOIN (
-    #         SELECT REVIEW_ID,
-    #             ARRAY_AGG(DISTINCT ENTITY) AS ENTITY,
-    #             ARRAY_AGG(DISTINCT CASE WHEN CATEGORY != 'Unknown' THEN CATEGORY END) AS CATEGORY,
-    #             ARRAY_AGG(DISTINCT CASE WHEN CATEGORY_GROUP != 'Unknown' THEN CATEGORY_GROUP END) AS CATEGORY_GROUP,
-    #             ARRAY_AGG(DISTINCT CASE WHEN TOPIC != 'Unknown' THEN TOPIC END) AS TOPIC
-    #         FROM sentences
-    #         GROUP BY REVIEW_ID
-    #     ) AS s ON d.REVIEW_ID = s.REVIEW_ID
-    # """).fetchdf()

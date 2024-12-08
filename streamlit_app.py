@@ -55,7 +55,7 @@ db = get_db_connection()
 
 # Create tables in DuckDB
 db.execute(f"CREATE TABLE IF NOT EXISTS locations AS SELECT * FROM read_csv_auto('{st.secrets['locations_path']}');")
-db.execute(f"CREATE TABLE IF NOT EXISTS reviews AS SELECT * FROM read_csv_auto('{reviews_path}');")
+db.execute(f"CREATE OR REPLACE TABLE reviews AS SELECT * FROM read_csv_auto('{reviews_path}');")
 db.execute(f"CREATE TABLE IF NOT EXISTS sentences AS SELECT * FROM read_csv_auto('{st.secrets['sentences_path']}');")
 db.execute(f"CREATE TABLE IF NOT EXISTS attributes AS SELECT * FROM read_csv_auto('{st.secrets['attributes_path']}');")
 
@@ -115,35 +115,37 @@ selected_location = st.sidebar.multiselect('Select a location', location_options
 
 # Merge locations, reviews, and sentences data with brand filter
 db.execute("""
-    CREATE TABLE IF NOT EXISTS locations_reviews_sentences_merged AS 
-    SELECT l.*, r.*, s.ENTITY, s.CATEGORY, s.CATEGORY_GROUP, s.TOPIC
+    CREATE OR REPLACE TABLE locations_reviews_merged AS 
+    SELECT l.*, r.*
     FROM locations l 
     INNER JOIN reviews r ON l.PLACE_ID = r.PLACE_ID
-    LEFT JOIN (
-        SELECT REVIEW_ID,
-            ARRAY_AGG(DISTINCT ENTITY) AS ENTITY,
-            ARRAY_AGG(DISTINCT CASE WHEN CATEGORY != 'Unknown' AND CATEGORY IS NOT NULL AND CATEGORY != '' THEN CATEGORY END) AS CATEGORY,
-            ARRAY_AGG(DISTINCT CASE WHEN CATEGORY_GROUP != 'Unknown' AND CATEGORY_GROUP IS NOT NULL AND CATEGORY_GROUP != '' THEN CATEGORY_GROUP END) AS CATEGORY_GROUP,
-            ARRAY_AGG(DISTINCT CASE WHEN TOPIC != 'Unknown' AND TOPIC IS NOT NULL AND TOPIC != '' THEN TOPIC END) AS TOPIC
-        FROM sentences
-        GROUP BY REVIEW_ID
-    ) AS s ON r.REVIEW_ID = s.REVIEW_ID
     WHERE l.BRAND = ?;
-""", (brand,))
-
+    """, (brand,))
+    #       """, s.ENTITY, s.CATEGORY, s.CATEGORY_GROUP, s.TOPIC
+#    LEFT JOIN (
+ #       SELECT REVIEW_ID,
+  #          ARRAY_AGG(DISTINCT ENTITY) AS ENTITY,
+   #         ARRAY_AGG(DISTINCT CASE WHEN CATEGORY != 'Unknown' AND CATEGORY IS NOT NULL AND CATEGORY != '' THEN CATEGORY END) AS CATEGORY,
+    #        ARRAY_AGG(DISTINCT CASE WHEN CATEGORY_GROUP != 'Unknown' AND CATEGORY_GROUP IS NOT NULL AND CATEGORY_GROUP != '' THEN CATEGORY_GROUP END) AS CATEGORY_GROUP,
+     #       ARRAY_AGG(DISTINCT CASE WHEN TOPIC != 'Unknown' AND TOPIC IS NOT NULL AND TOPIC != '' THEN TOPIC END) AS TOPIC
+      #  FROM sentences
+       # GROUP BY REVIEW_ID
+    #) AS s ON r.REVIEW_ID = s.REVIEW_ID
+    
 # Sentiment Selection
-sentiment_options = sorted(db.execute("SELECT DISTINCT OVERALL_SENTIMENT FROM locations_reviews_sentences_merged").fetchdf()['OVERALL_SENTIMENT'].tolist())
+sentiment_options = sorted(db.execute("SELECT DISTINCT OVERALL_SENTIMENT FROM locations_reviews_merged").fetchdf()['OVERALL_SENTIMENT'].tolist())
 selected_sentiment = st.sidebar.multiselect('Select a sentiment', sentiment_options, placeholder='All') or sentiment_options
 
 # Rating Selection
-rating_options = sorted(db.execute("SELECT DISTINCT RATING FROM locations_reviews_sentences_merged").fetchdf()['RATING'].tolist())
+rating_options = sorted(db.execute("SELECT DISTINCT RATING FROM locations_reviews_merged").fetchdf()['RATING'].tolist())
 selected_rating = st.sidebar.multiselect('Select a review rating', rating_options, placeholder='All') or rating_options
 
 # Date Selection
 date_options = ['Last Week', 'Last Month', 'Last 3 Months', 'All Time', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=None, placeholder='All')
-min_date = db.execute("SELECT MIN(REVIEW_DATE) FROM locations_reviews_sentences_merged").fetchone()[0]
-max_date = db.execute("SELECT MAX(REVIEW_DATE) FROM locations_reviews_sentences_merged").fetchone()[0]
+
+min_date = db.execute("SELECT MIN(REVIEW_DATE) FROM locations_reviews_merged").fetchone()[0]
+max_date = db.execute("SELECT MAX(REVIEW_DATE) FROM locations_reviews_merged").fetchone()[0]
 
 if date_selection == 'Other':
     start_date, end_date = st.sidebar.slider('Select date range', value=[min_date.date(), max_date.date()], min_value=min_date.date(), max_value=max_date.date(), key='date_input')
@@ -161,21 +163,22 @@ else:
 selected_date_range = (start_date, end_date)
 
 # Fetch counts and data
-st.session_state.location_count_total = db.execute("SELECT COUNT(DISTINCT PLACE_ID) FROM locations_reviews_sentences_merged;").fetchone()[0]
-st.session_state.review_count_total = db.execute("SELECT COUNT(*) FROM locations_reviews_sentences_merged;").fetchone()[0]
-st.session_state.avg_rating_total = db.execute("SELECT AVG(RATING) FROM locations_reviews_sentences_merged;").fetchone()[0]
-st.session_state.data_collected_at = db.execute("SELECT MAX(DATA_COLLECTED_AT) FROM locations_reviews_sentences_merged;").fetchone()[0]
+st.session_state.location_count_total = db.execute("SELECT COUNT(DISTINCT PLACE_ID) FROM locations_reviews_merged;").fetchone()[0]
+st.session_state.review_count_total = db.execute("SELECT COUNT(DISTINCT REVIEW_ID) FROM locations_reviews_merged;").fetchone()[0]
+st.session_state.avg_rating_total = db.execute("SELECT AVG(RATING) FROM locations_reviews_merged;").fetchone()[0]
+st.session_state.data_collected_at = db.execute("SELECT MAX(DATA_COLLECTED_AT) FROM locations_reviews_merged;").fetchone()[0]
 
 # Filter data based on selected filters
 query = """
     SELECT *
-    FROM locations_reviews_sentences_merged
+    FROM locations_reviews_merged
     WHERE STATE IN ? 
     AND CITY IN ? 
     AND ADDRESS IN ? 
     AND OVERALL_SENTIMENT IN ? 
     AND RATING IN ?
     AND REVIEW_DATE BETWEEN ? AND ?
+    ORDER BY REVIEW_DATE DESC
 """
 filtered_data = db.execute(
     query,
@@ -211,3 +214,4 @@ if menu_id == 'Support':
 
 if menu_id == 'Assistant':
     assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID']) #, bot_data=bot_data)
+
