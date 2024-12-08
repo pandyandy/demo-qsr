@@ -6,6 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.express as px
 
+from scripts.db_utils import get_db_connection
 from scripts.viz import sentiment_color
 
 def create_network_graph(attributes, slider_entities):
@@ -119,7 +120,7 @@ def display_network_graph(attributes):
     col1.pyplot(fig, use_container_width=True)
 
 
-def ai_analysis(data, attributes, sentences):
+def ai_analysis(data):
     ## SENTIMENT COUNT BY DATE
     data['REVIEW_DATE'] = pd.to_datetime(data['REVIEW_DATE']).dt.date
     avg_rating_per_day = data.groupby('REVIEW_DATE')['RATING'].mean().reset_index()
@@ -164,14 +165,16 @@ def ai_analysis(data, attributes, sentences):
     fig_avg_detailed_rating_by_date.update_traces(mode='lines+markers', hovertemplate='Avg Rating: %{y:.2f}<extra></extra>')
     fig_avg_detailed_rating_by_date.update_layout(xaxis_title=None, yaxis_title=None, hovermode='x')
     st.plotly_chart(fig_avg_detailed_rating_by_date)
-    
-    ## ENTITY-ATTRIBUTE RELATIONS
     st.divider()
+
+    ## ENTITY-ATTRIBUTE RELATIONS
+    db = get_db_connection()
+    attributes = db.execute("SELECT * FROM filtered_attributes").fetchdf()
     display_network_graph(attributes)
 
     ## ENTITY CLASSIFICATION
     @st.fragment
-    def entity_classification(data, sentences):
+    def entity_classification(data):
         col1, col2, col3 = st.columns([0.3, 0.35, 0.35], gap='medium', vertical_alignment='center')
         with col1:
             st.markdown("##### Classification")
@@ -195,9 +198,7 @@ def ai_analysis(data, attributes, sentences):
                     "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
                 }
             }
-
-            category_options = list(categories.keys())
-            #category_options = sorted(sentences[sentences['CATEGORY'] != 'Unknown']['CATEGORY'].unique().tolist())
+            category_options = sorted(list(categories.keys()))
             category = st.multiselect("Select categories", options=category_options, placeholder='All')
             if len(category) > 0:
                 selected_category = category
@@ -208,9 +209,8 @@ def ai_analysis(data, attributes, sentences):
             groups = []
             for cat in selected_category:
                 groups.extend(categories[cat].keys())
-            group_options = list(set(groups))
+            group_options = sorted(set(groups))
             
-            #group_options = sorted(filtered_sentences[filtered_sentences['CATEGORY_GROUP'] != 'Unknown']['CATEGORY_GROUP'].unique().tolist())
             group = st.multiselect("Select groups", options=group_options, placeholder='All')
             if len(group) > 0:
                 selected_group = group
@@ -219,7 +219,7 @@ def ai_analysis(data, attributes, sentences):
                     for cat in selected_category:
                         if g in categories[cat]:
                             topics.extend(categories[cat][g])
-                topic_options = list(set(topics))
+                topic_options = sorted(set(topics))
             else:
                 selected_group = group_options
                 topics = []
@@ -227,33 +227,32 @@ def ai_analysis(data, attributes, sentences):
                     for cat in selected_category:
                         if g in categories[cat]:
                             topics.extend(categories[cat][g])
-                topic_options = list(set(topics))
+                topic_options = sorted(set(topics))
 
-            
-            #topic_options = sorted(filtered_sentences[filtered_sentences['TOPIC'] != 'Unknown']['TOPIC'].unique().tolist())
             topic = st.multiselect("Select topics", options=topic_options, placeholder='All')        
             if len(topic) > 0:
                 selected_topic = topic
             else:
                 selected_topic = topic_options
                 
-
-            filtered_sentences = sentences[
-                (sentences['CATEGORY'].isin(selected_category)) &
-                (sentences['CATEGORY_GROUP'].isin(selected_group)) &
-                (sentences['TOPIC'].isin(selected_topic))
-            ]
-            #st.write(filtered_sentences)
+            # Fetch sentences and attributes
             # filtered_sentences = db.execute("""
-            #     SELECT * FROM sentences
-            #     WHERE CATEGORY IN ({})
-            #     AND CATEGORY_GROUP IN ({})
-            #     AND TOPIC IN ({})
-            # """.format(
-            #     ','.join(['?'] * len(selected_category)),
-            #     ','.join(['?'] * len(selected_group)),
-            #     ','.join(['?'] * len(selected_topic))
-            # ), selected_category + selected_group + selected_topic).fetchdf()
+            #     SELECT *
+            #     FROM sentences
+            #     WHERE REVIEW_ID IN (SELECT REVIEW_ID FROM filtered_data)
+            # """).fetchdf()
+            filtered_sentences = db.execute("""
+                SELECT *
+                FROM sentences
+                WHERE REVIEW_ID IN (SELECT REVIEW_ID FROM data)
+                AND CATEGORY IN ({})
+                AND CATEGORY_GROUP IN ({})
+                AND TOPIC IN ({})
+            """.format(
+                ','.join(['?'] * len(selected_category)),
+                ','.join(['?'] * len(selected_group)),
+                ','.join(['?'] * len(selected_topic))
+            ), selected_category + selected_group + selected_topic).fetchdf()
 
         with col2:
             filtered_entities = filtered_sentences[filtered_sentences['SENTENCE_SENTIMENT'] == 'Positive']
@@ -352,7 +351,7 @@ def ai_analysis(data, attributes, sentences):
                     hide_index=True, 
                     use_container_width=True)
     
-    entity_classification(data, sentences)
+    entity_classification(data)
 
     # data = db.execute("""
     #     SELECT d.*, s.ENTITY, s.CATEGORY, s.CATEGORY_GROUP, s.TOPIC
