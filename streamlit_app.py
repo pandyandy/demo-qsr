@@ -50,6 +50,9 @@ attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
 attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()
 attributes = attributes[attributes['count'] > 2]
 
+# Convert REVIEW_DATE to datetime, handling NaT values
+reviews_data['REVIEW_DATE'] = pd.to_datetime(reviews_data['REVIEW_DATE'])
+
 ## LOGO
 st.sidebar.markdown(
     f'''
@@ -108,9 +111,6 @@ if len(location) > 0:
 else:
     selected_location = location_options
 
-# Filter reviews based on selected locations
-#filtered_reviews = reviews_data[reviews_data['PLACE_ID'].isin(locations_data['PLACE_ID'])]
-
 # Sentiment Selection
 sentiment_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['OVERALL_SENTIMENT'].unique().tolist())
 sentiment = st.sidebar.multiselect('Select a sentiment', sentiment_options, placeholder='All')
@@ -128,8 +128,8 @@ else:
     selected_rating = rating_options
 
 # Date Selection
-date_options = ['Last Week', 'Last Month', 'Last 3 Months', 'All Time', 'Other']
-date_selection = st.sidebar.selectbox('Select a date', date_options, index=None, placeholder='All')
+date_options = ['All Time', 'Last Week', 'Last Month', 'Other']
+date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
 min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
 max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
 
@@ -146,8 +146,6 @@ else:
         start_date = end_date - pd.DateOffset(weeks=1)
     elif date_selection == 'Last Month':
         start_date = end_date - pd.DateOffset(months=1)
-    elif date_selection == 'Last 3 Months':
-        start_date = end_date - pd.DateOffset(months=3)
     elif date_selection == 'All Time':
         start_date = min_date
 selected_date_range = (start_date, end_date)
@@ -168,14 +166,11 @@ filtered_data = filtered_data[
     filtered_data['RATING'].isin(selected_rating)
 ]
 
-# Convert REVIEW_DATE to datetime, handling NaT values
-filtered_data['REVIEW_DATE'] = pd.to_datetime(filtered_data['REVIEW_DATE'])
-
 # Filter out NaT values before formatting
-filtered_data = filtered_data.dropna(subset=['REVIEW_DATE'])
+#filtered_data = filtered_data.dropna(subset=['REVIEW_DATE'])
 
 # Format dates
-filtered_data['REVIEW_DATE'] = filtered_data['REVIEW_DATE'].dt.strftime('%Y-%m-%d %H:%M')
+#filtered_data['REVIEW_DATE'] = filtered_data['REVIEW_DATE'].dt.strftime('%Y-%m-%d %H:%M')
 
 filtered_data = filtered_data[
     filtered_data['REVIEW_DATE'].between(selected_date_range[0].strftime('%Y-%m-%d %H:%M'), selected_date_range[1].strftime('%Y-%m-%d %H:%M'))
@@ -184,7 +179,6 @@ filtered_data = filtered_data[
 # Order by REVIEW_DATE
 filtered_data = filtered_data.sort_values(by='REVIEW_DATE', ascending=False)
 sentences_data = sentences_data[sentences_data['REVIEW_ID'].isin(filtered_data['REVIEW_ID'])]
-
 
 if filtered_data.empty:
     st.info('No data available for the selected filters.', icon=':material/info:')
