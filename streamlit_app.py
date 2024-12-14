@@ -168,8 +168,14 @@ filtered_data = filtered_data[
     filtered_data['RATING'].isin(selected_rating)
 ]
 
-# Convert REVIEW_DATE to datetime for comparison
-filtered_data['REVIEW_DATE'] = pd.to_datetime(filtered_data['REVIEW_DATE']).dt.strftime('%Y-%m-%d %H:%M')
+# Convert REVIEW_DATE to datetime, handling NaT values
+filtered_data['REVIEW_DATE'] = pd.to_datetime(filtered_data['REVIEW_DATE'])
+
+# Format dates, skipping NaT values
+filtered_data['REVIEW_DATE'] = filtered_data['REVIEW_DATE'].apply(
+    lambda x: x.strftime('%Y-%m-%d %H:%M') if not pd.isnull(x) else None
+)
+
 filtered_data = filtered_data[
     filtered_data['REVIEW_DATE'].between(selected_date_range[0].strftime('%Y-%m-%d %H:%M'), selected_date_range[1].strftime('%Y-%m-%d %H:%M'))
 ]   
