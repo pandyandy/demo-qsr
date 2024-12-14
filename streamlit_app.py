@@ -61,7 +61,7 @@ st.sidebar.markdown(
 )
 
 if 'brand_options' not in st.session_state:
-    st.session_state.brand_options = locations_data['BRAND'].unique().tolist()
+    st.session_state.brand_options = sorted(locations_data['BRAND'].unique().tolist())
 
 brand = st.sidebar.selectbox('Select a brand', st.session_state.brand_options, index=0, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
 st.session_state.filtered_locations = locations_data[locations_data['BRAND'] == brand]
@@ -176,6 +176,7 @@ filtered_data = filtered_data[
 
 # Order by REVIEW_DATE
 filtered_data = filtered_data.sort_values(by='REVIEW_DATE', ascending=False)
+sentences_data = sentences_data[sentences_data['REVIEW_ID'].isin(filtered_data['REVIEW_ID'])]
 
 
 if filtered_data.empty:

@@ -171,8 +171,6 @@ def ai_analysis(data, attributes, sentences):
     ## ENTITY CLASSIFICATION
     @st.fragment
     def entity_classification(data, sentences):
-        sentences_data_filtered = sentences[sentences['REVIEW_ID'].isin(data['REVIEW_ID'])]
-
         col1, col2, col3 = st.columns([0.3, 0.35, 0.35], gap='medium', vertical_alignment='center')
         with col1:
             st.markdown("##### Classification")
@@ -233,11 +231,11 @@ def ai_analysis(data, attributes, sentences):
             else:
                 selected_topic = topic_options
             
-            filtered_sentences = sentences[
-                sentences['CATEGORY'].isin(selected_category) &
-                sentences['CATEGORY_GROUP'].isin(selected_group) &
-                sentences['TOPIC'].isin(selected_topic)
-            ]
+        filtered_sentences = sentences[
+            sentences['CATEGORY'].isin(selected_category) &
+            sentences['CATEGORY_GROUP'].isin(selected_group) &
+            sentences['TOPIC'].isin(selected_topic)
+        ]
 
         with col2:
             filtered_entities = filtered_sentences[filtered_sentences['SENTENCE_SENTIMENT'] == 'Positive']
@@ -292,10 +290,13 @@ def ai_analysis(data, attributes, sentences):
 
         ## REVIEW DETAILS
         st.markdown("##### Review Details")
-
         data = data[data['REVIEW_TEXT'].notna()]
-        filtered_data = data.merge(
-            filtered_sentences.groupby('REVIEW_ID').agg(
+        
+        unique_review_ids = filtered_sentences['REVIEW_ID'].unique()
+        filtered_review_data = data[data['REVIEW_ID'].isin(unique_review_ids)]
+      
+        filtered_data = filtered_review_data.merge(
+            sentences.groupby('REVIEW_ID').agg(
                 ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
                 CATEGORY=('CATEGORY', lambda x: [cat for cat in x.unique().tolist() if cat != 'Unknown']),
                 CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: [group for group in x.unique().tolist() if group != 'Unknown']),
@@ -304,9 +305,6 @@ def ai_analysis(data, attributes, sentences):
             on='REVIEW_ID',
             how='inner'
         )
-        # Filter data based on selected filters
-        #unique_review_ids = filtered_sentences['REVIEW_ID'].unique()
-        #filtered_review_data = data[data['REVIEW_ID'].isin(unique_review_ids)].sort_values('REVIEW_DATE', ascending=False)
         
         if filtered_data.empty:
             st.info("No reviews with feedback text available for the selected filters.", icon=':material/info:')
