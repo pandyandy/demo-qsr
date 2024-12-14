@@ -24,7 +24,6 @@ LOGO_URL=st.secrets['LOGO_URL']
 session_defaults = {
     "thread_id": None,
     "messages": [{'role': 'assistant', 'content': 'Welcome! How can I assist you today?'}],
-#    "table_written": False,
     "new_prompt": None,
     "instruction": '',
     "regenerate_clicked": False,
@@ -51,7 +50,6 @@ attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
 attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()
 attributes = attributes[attributes['count'] > 2]
 
-
 ## LOGO
 st.sidebar.markdown(
     f'''
@@ -62,47 +60,28 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-# if 'all_data_merged' not in st.session_state:
-#     st.session_state['all_data_merged'] = locations_reviews_merged.merge(
-#         sentences_data.groupby('REVIEW_ID').agg(
-#             ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
-#             CATEGORY=('CATEGORY', lambda x: x.unique().tolist()),
-#             CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: x.unique().tolist()),
-#             TOPIC=('TOPIC', lambda x: x.unique().tolist())
-#         ).reset_index(),
-#         on='REVIEW_ID',
-#         how='left'
-#     )
-# all_data_merged = st.session_state['all_data_merged']
-# Brand Selection
-## FILTERS
-# Brand Selection
-# if st.secrets.get('all_brands', 'True') == 'True':
-#     brand_options = locations_reviews_merged['BRAND'].unique().tolist()
-#     brand = st.sidebar.selectbox('Select a brand', brand_options, index=0, placeholder='All')
-# else:
-#     brand = st.secrets['brand_filter']
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = locations_data['BRAND'].unique().tolist()
 
 brand = st.sidebar.selectbox('Select a brand', st.session_state.brand_options, index=0, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
 st.session_state.filtered_locations = locations_data[locations_data['BRAND'] == brand]
 
+# Merge locations and reviews data for the specific brand and save to session state
+if f'locations_reviews_merged_{brand}' not in st.session_state:
+    st.session_state[f'locations_reviews_merged_{brand}'] = pd.merge(
+        st.session_state.filtered_locations,
+        reviews_data,
+        on='PLACE_ID',
+        how='inner'
+    )
 
-# Merge locations and reviews data once and save to session state
-if 'locations_reviews_merged' not in st.session_state:
-    st.session_state.locations_reviews_merged = pd.merge(st.session_state.filtered_locations, reviews_data, on='PLACE_ID', how='inner')
-
-#locations_reviews_merged = st.session_state.locations_reviews_merged
-
-#locations_reviews_merged = locations_reviews_merged[locations_reviews_merged['BRAND'] == brand]
 location_count_total = len(st.session_state.filtered_locations)
 data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max()
 
 # Calculate review count and average rating based on selected brand
-review_count_total = len(st.session_state.locations_reviews_merged)
+review_count_total = len(st.session_state[f'locations_reviews_merged_{brand}'])
 #avg_rating_total = st.session_state.locations_reviews_merged['RATING'].mean().round(2)
-avg_rating_total = round(st.session_state.locations_reviews_merged['RATING'].mean(), 2)
+avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].mean(), 2)
 # State Selection
 state_options = sorted(st.session_state.filtered_locations['STATE'].unique().tolist())
 state = st.sidebar.multiselect('Select a state', state_options, placeholder='All')
@@ -133,7 +112,7 @@ else:
 #filtered_reviews = reviews_data[reviews_data['PLACE_ID'].isin(locations_data['PLACE_ID'])]
 
 # Sentiment Selection
-sentiment_options = sorted(st.session_state.locations_reviews_merged['OVERALL_SENTIMENT'].unique().tolist())
+sentiment_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['OVERALL_SENTIMENT'].unique().tolist())
 sentiment = st.sidebar.multiselect('Select a sentiment', sentiment_options, placeholder='All')
 if len(sentiment) > 0:
     selected_sentiment = sentiment
@@ -141,7 +120,7 @@ else:
     selected_sentiment = sentiment_options
 
 # Rating Selection
-rating_options = sorted(st.session_state.locations_reviews_merged['RATING'].unique().tolist())
+rating_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].unique().tolist())
 rating = st.sidebar.multiselect('Select a review rating', rating_options, placeholder='All')
 if len(rating) > 0:
     selected_rating = rating
@@ -151,8 +130,8 @@ else:
 # Date Selection
 date_options = ['Last Week', 'Last Month', 'Last 3 Months', 'All Time', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=None, placeholder='All')
-min_date = pd.to_datetime(st.session_state.locations_reviews_merged['REVIEW_DATE'].min())
-max_date = pd.to_datetime(st.session_state.locations_reviews_merged['REVIEW_DATE'].max())
+min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
+max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
 
 if date_selection is None:
     start_date = min_date
@@ -173,8 +152,8 @@ else:
         start_date = min_date
 selected_date_range = (start_date, end_date)
 
-filtered_data = st.session_state.locations_reviews_merged[
-    st.session_state.locations_reviews_merged['STATE'].isin(selected_state)
+filtered_data = st.session_state[f'locations_reviews_merged_{brand}'][
+    st.session_state[f'locations_reviews_merged_{brand}']['STATE'].isin(selected_state)
 ]
 filtered_data = filtered_data[
     filtered_data['CITY'].isin(selected_city)
