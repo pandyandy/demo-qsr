@@ -171,6 +171,8 @@ def ai_analysis(data, attributes, sentences):
     ## ENTITY CLASSIFICATION
     @st.fragment
     def entity_classification(data, sentences):
+        sentences_data_filtered = sentences[sentences['REVIEW_ID'].isin(data['REVIEW_ID'])]
+
         col1, col2, col3 = st.columns([0.3, 0.35, 0.35], gap='medium', vertical_alignment='center')
         with col1:
             st.markdown("##### Classification")
@@ -195,22 +197,18 @@ def ai_analysis(data, attributes, sentences):
                 }
             }
 
-            category_options = list(categories.keys())
-            #category_options = sorted(sentences[sentences['CATEGORY'] != 'Unknown']['CATEGORY'].unique().tolist())
+            category_options = sorted(list(categories.keys()))
             category = st.multiselect("Select categories", options=category_options, placeholder='All')
             if len(category) > 0:
                 selected_category = category
             else:
                 selected_category = category_options
 
-            filtered_sentences = sentences[sentences['CATEGORY'].isin(selected_category)]
-
             groups = []
             for cat in selected_category:
                 groups.extend(categories[cat].keys())
-            group_options = list(set(groups))
+            group_options = sorted(list(set(groups)))
             
-            #group_options = sorted(filtered_sentences[filtered_sentences['CATEGORY_GROUP'] != 'Unknown']['CATEGORY_GROUP'].unique().tolist())
             group = st.multiselect("Select groups", options=group_options, placeholder='All')
             if len(group) > 0:
                 selected_group = group
@@ -219,7 +217,7 @@ def ai_analysis(data, attributes, sentences):
                     for cat in selected_category:
                         if g in categories[cat]:
                             topics.extend(categories[cat][g])
-                topic_options = list(set(topics))
+                topic_options = sorted(list(set(topics)))
             else:
                 selected_group = group_options
                 topics = []
@@ -227,17 +225,19 @@ def ai_analysis(data, attributes, sentences):
                     for cat in selected_category:
                         if g in categories[cat]:
                             topics.extend(categories[cat][g])
-                topic_options = list(set(topics))
+                topic_options = sorted(list(set(topics)))
 
-            filtered_sentences = filtered_sentences[filtered_sentences['CATEGORY_GROUP'].isin(selected_group)]
-            
-            #topic_options = sorted(filtered_sentences[filtered_sentences['TOPIC'] != 'Unknown']['TOPIC'].unique().tolist())
             topic = st.multiselect("Select topics", options=topic_options, placeholder='All')        
             if len(topic) > 0:
                 selected_topic = topic
             else:
                 selected_topic = topic_options
-            filtered_sentences = filtered_sentences[filtered_sentences['TOPIC'].isin(selected_topic)]
+            
+            filtered_sentences = sentences[
+                sentences['CATEGORY'].isin(selected_category) &
+                sentences['CATEGORY_GROUP'].isin(selected_group) &
+                sentences['TOPIC'].isin(selected_topic)
+            ]
 
         with col2:
             filtered_entities = filtered_sentences[filtered_sentences['SENTENCE_SENTIMENT'] == 'Positive']
@@ -292,16 +292,28 @@ def ai_analysis(data, attributes, sentences):
 
         ## REVIEW DETAILS
         st.markdown("##### Review Details")
+
+        data = data[data['REVIEW_TEXT'].notna()]
+        filtered_data = data.merge(
+            filtered_sentences.groupby('REVIEW_ID').agg(
+                ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
+                CATEGORY=('CATEGORY', lambda x: [cat for cat in x.unique().tolist() if cat != 'Unknown']),
+                CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: [group for group in x.unique().tolist() if group != 'Unknown']),
+                TOPIC=('TOPIC', lambda x: [topic for topic in x.unique().tolist() if topic != 'Unknown'])
+            ).reset_index(),
+            on='REVIEW_ID',
+            how='inner'
+        )
         # Filter data based on selected filters
-        unique_review_ids = filtered_sentences['REVIEW_ID'].unique()
-        filtered_review_data = data[data['REVIEW_ID'].isin(unique_review_ids)].sort_values('REVIEW_DATE', ascending=False)
+        #unique_review_ids = filtered_sentences['REVIEW_ID'].unique()
+        #filtered_review_data = data[data['REVIEW_ID'].isin(unique_review_ids)].sort_values('REVIEW_DATE', ascending=False)
         
-        if filtered_review_data.empty:
+        if filtered_data.empty:
             st.info("No reviews with feedback text available for the selected filters.", icon=':material/info:')
             st.stop()
 
         columns = ['REVIEW_DATE', 'RATING', 'REVIEW_TEXT', 'OVERALL_SENTIMENT', 'ADDRESS', 'CATEGORY', 'CATEGORY_GROUP', 'TOPIC', 'ENTITY', 'REVIEWER_NAME', 'REVIEW_URL']
-        st.dataframe(filtered_review_data[columns],
+        st.dataframe(filtered_data[columns],
                      #.style.map(sentiment_color, subset=["OVERALL_SENTIMENT"]),
                     column_config={
                         'REVIEW_DATE': 'Date',
@@ -336,17 +348,4 @@ def ai_analysis(data, attributes, sentences):
                     hide_index=True, 
                     use_container_width=True)
     
-
-    data = data[data['REVIEW_TEXT'].notna()]
-    data = data.merge(
-        sentences.groupby('REVIEW_ID').agg(
-            ENTITY=('ENTITY', lambda x: [entity for entity in x if entity and pd.notna(entity)]),
-            CATEGORY=('CATEGORY', lambda x: [cat for cat in x.unique().tolist() if cat != 'Unknown']),
-            CATEGORY_GROUP=('CATEGORY_GROUP', lambda x: [group for group in x.unique().tolist() if group != 'Unknown']),
-            TOPIC=('TOPIC', lambda x: [topic for topic in x.unique().tolist() if topic != 'Unknown'])
-        ).reset_index(),
-        on='REVIEW_ID',
-        how='left'
-    )
-
     entity_classification(data, sentences)
