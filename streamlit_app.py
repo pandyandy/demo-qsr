@@ -127,15 +127,12 @@ if len(rating) > 0:
 else:
     selected_rating = rating_options
 
-st.write(st.session_state[f'locations_reviews_merged_{brand}'])
-
 # Date Selection
 date_options = ['All Time', 'Last Week', 'Last Month', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
 min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
 max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
-st.write(min_date)
-st.write(max_date)
+
 if date_selection is None:
     start_date = min_date
     end_date = max_date
@@ -175,7 +172,6 @@ filtered_data = filtered_data[
 # Format dates
 #filtered_data['REVIEW_DATE'] = filtered_data['REVIEW_DATE'].dt.strftime('%Y-%m-%d %H:%M')
 
-st.write(selected_date_range)
 filtered_data = filtered_data[
     filtered_data['REVIEW_DATE'].between(selected_date_range[0].strftime('%Y-%m-%d %H:%M'), selected_date_range[1].strftime('%Y-%m-%d %H:%M'))
 ]   
