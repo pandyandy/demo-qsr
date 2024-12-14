@@ -127,6 +127,8 @@ if len(rating) > 0:
 else:
     selected_rating = rating_options
 
+st.write(st.session_state[f'locations_reviews_merged_{brand}'])
+
 # Date Selection
 date_options = ['All Time', 'Last Week', 'Last Month', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
