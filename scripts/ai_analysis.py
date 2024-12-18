@@ -9,7 +9,7 @@ from scripts.viz import sentiment_color
 
 def create_network_graph(attributes, slider_entities):
     # Get top entities by total attribute counts
-    pivot_attrs = attributes.pivot(index='entity', columns='attribute', values='count').fillna(0)
+    pivot_attrs = attributes.pivot(index='ENTITY', columns='ATTRIBUTE', values='COUNT').fillna(0)
     pivot_attrs['Total'] = pivot_attrs.sum(axis=1)
     top_entities = pivot_attrs.nlargest(slider_entities, 'Total').index.tolist()
     
@@ -43,10 +43,10 @@ def calculate_entity_positions(entities, radius=1.5):
 def add_nodes_and_edges(G, top_entities, attributes):
     for entity in top_entities:
         G.add_node(entity, node_type='entity')
-        entity_attrs = attributes[attributes['entity'] == entity]
+        entity_attrs = attributes[attributes['ENTITY'] == entity]
         
         for _, row in entity_attrs.iterrows():
-            attr, count = row['attribute'], row['count']
+            attr, count = row['ATTRIBUTE'], row['COUNT']
             G.add_node(attr, node_type='attribute') if attr not in G else None
             G.add_edge(entity, attr, weight=count)
 
