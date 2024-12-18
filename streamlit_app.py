@@ -83,8 +83,8 @@ data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max
 
 # Calculate review count and average rating based on selected brand
 review_count_total = len(st.session_state[f'locations_reviews_merged_{brand}'])
-#avg_rating_total = st.session_state.locations_reviews_merged['RATING'].mean().round(2)
 avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].mean(), 2)
+
 # State Selection
 state_options = sorted(st.session_state.filtered_locations['STATE'].unique().tolist())
 state = st.sidebar.multiselect('Select a state', state_options, placeholder='All')
@@ -165,12 +165,6 @@ filtered_data = filtered_data[
 filtered_data = filtered_data[
     filtered_data['RATING'].isin(selected_rating)
 ]
-
-# Filter out NaT values before formatting
-#filtered_data = filtered_data.dropna(subset=['REVIEW_DATE'])
-
-# Format dates
-#filtered_data['REVIEW_DATE'] = filtered_data['REVIEW_DATE'].dt.strftime('%Y-%m-%d %H:%M')
 
 filtered_data = filtered_data[
     filtered_data['REVIEW_DATE'].between(selected_date_range[0].strftime('%Y-%m-%d %H:%M'), selected_date_range[1].strftime('%Y-%m-%d %H:%M'))
