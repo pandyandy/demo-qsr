@@ -42,13 +42,13 @@ locations_data = pd.read_csv(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
-#bot_data = pd.read_csv(st.secrets['bot_path'])
+bot_data = pd.read_csv(st.secrets['bot_path'])
 
-attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
+#attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
 pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They', 'whataburger', 'Whataburger']
 attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
-attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()
-attributes = attributes[attributes['count'] > 2]
+#attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()#
+#attributes = attributes[attributes['count'] > 2]
 
 # Convert REVIEW_DATE to datetime, handling NaT values
 reviews_data['REVIEW_DATE'] = pd.to_datetime(reviews_data['REVIEW_DATE'])
@@ -66,8 +66,14 @@ st.sidebar.markdown(
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['BRAND'].unique().tolist())
 
-brand = st.sidebar.selectbox('Select a brand', st.session_state.brand_options, index=0, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
-st.session_state.filtered_locations = locations_data[locations_data['BRAND'] == brand]
+brand = st.sidebar.multiselect('Select a brand', st.session_state.brand_options, index=0, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
+
+if len(brand) > 0:
+    st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
+else:
+    st.session_state.filtered_locations = locations_data
+
+#st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
 
 # Merge locations and reviews data for the specific brand and save to session state
 if f'locations_reviews_merged_{brand}' not in st.session_state:
