@@ -46,7 +46,7 @@ bot_data = pd.read_csv(st.secrets['bot_path'])
 
 #attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
 pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They', 'whataburger', 'Whataburger']
-attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
+attributes = attributes[~attributes['ENTITY'].isin(pronouns_to_remove)]
 #attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()#
 #attributes = attributes[attributes['count'] > 2]
 
@@ -207,4 +207,4 @@ if menu_id == 'Support':
     support(filtered_data, reviews_data)
 
 if menu_id == 'Assistant':
-    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID']) #, bot_data=bot_data)
+    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'], bot_data=bot_data)
