@@ -14,6 +14,8 @@ from scripts.openai import assistant
 from scripts.sapi import read_data
 from scripts.viz import metrics
 
+from streamlit_extras.let_it_rain import rain
+
 st.set_page_config(layout="wide")
 
 ASSISTANT_ID=st.secrets['ASSISTANT_ID']
@@ -37,6 +39,16 @@ options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistan
 icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
+
+def example():
+    rain(
+        emoji="🎁",
+        font_size=44,
+        falling_speed=5,
+        animation_length="3 seconds",
+    )
+
+example()
 
 locations_data = pd.read_csv(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])
