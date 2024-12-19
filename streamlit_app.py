@@ -62,10 +62,8 @@ attributes = attributes[~attributes['ENTITY'].isin(pronouns_to_remove)]
 #attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()#
 #attributes = attributes[attributes['count'] > 2]
 
-# Convert REVIEW_DATE to datetime, handling NaT values
-reviews_data['REVIEW_DATE'] = pd.to_datetime(reviews_data['REVIEW_DATE'])
-
-## LOGO
+# Convert REVIEW_DATE to datetime, handling NaT values and potential format issues
+reviews_data['REVIEW_DATE'] = pd.to_datetime(reviews_data['REVIEW_DATE'], errors='coerce', format='mixed')
 st.sidebar.markdown(
     f'''
         <div style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
