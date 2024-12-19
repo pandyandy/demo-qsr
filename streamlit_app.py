@@ -35,11 +35,6 @@ for key, value in session_defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
-icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
-
-menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
-
 def example():
     rain(
         emoji="🎁",
@@ -55,6 +50,11 @@ reviews_data = read_data(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
 bot_data = pd.read_csv(st.secrets['bot_path'])
+
+options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
+icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
+
+menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
 #attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
 pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They', 'whataburger', 'Whataburger']
