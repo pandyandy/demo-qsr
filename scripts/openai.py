@@ -28,7 +28,7 @@ def generate_response(prompt):
         return ''
 
 @st.fragment
-def assistant(file_id, assistant_id): #bot_data
+def assistant(file_id, assistant_id, bot_data):
     if st.session_state.thread_id is None:
         thread = client.beta.threads.create(
             messages=[
@@ -76,8 +76,8 @@ def assistant(file_id, assistant_id): #bot_data
     #     write_table(table_id='in.c-257-bot-log.logging', df=df_log, is_incremental=True)
     #     st.session_state.table_written = True
 
-    #with st.expander("Data"):
-    #    st.dataframe(bot_data, hide_index=True)
+    with st.expander("Data"):
+        st.dataframe(bot_data, hide_index=True)
         #st.caption(f'Thread ID: {st.session_state.thread_id}')
 
     for message in st.session_state.messages:

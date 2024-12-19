@@ -112,7 +112,7 @@ def draw_network(G, pos, top_entities):
 def display_network_graph(attributes):
     col1, col2 = st.columns([0.9, 0.1], vertical_alignment='center')
     unique_entities_count = attributes['ENTITY'].nunique()
-    max_value = unique_entities_count if unique_entities_count < 20 else 20
+    max_value = unique_entities_count if unique_entities_count < 15 else 15
     col1.caption(f"_See up to top {max_value} mentioned entities and their attributes. The wider the line, the more times the attribute was mentioned._")
     num_entities = col2.number_input("Select the number of entities", min_value=1, max_value=max_value, value=max_value if max_value < 5 else 5)
     
