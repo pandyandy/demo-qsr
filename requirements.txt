@@ -7,4 +7,3 @@ kbcstorage
 keboola-streamlit
 networkx
 matplotlib
-streamlit-extras

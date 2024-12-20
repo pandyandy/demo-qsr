@@ -14,8 +14,6 @@ from scripts.openai import assistant
 from scripts.sapi import read_data
 from scripts.viz import metrics
 
-from streamlit_extras.let_it_rain import rain
-
 st.set_page_config(layout="wide")
 
 ASSISTANT_ID=st.secrets['ASSISTANT_ID']
@@ -35,16 +33,6 @@ for key, value in session_defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-def example():
-    rain(
-        emoji="🎁",
-        font_size=44,
-        falling_speed=5,
-        animation_length="3 seconds",
-    )
-
-example()
-
 locations_data = pd.read_csv(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
@@ -57,7 +45,7 @@ icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
 #attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
-pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They', 'whataburger', 'Whataburger']
+pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
 attributes = attributes[~attributes['ENTITY'].isin(pronouns_to_remove)]
 #attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()#
 #attributes = attributes[attributes['count'] > 2]
@@ -149,13 +137,20 @@ date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, pl
 min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
 max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
 
-if date_selection is None:
-    start_date = min_date
-    end_date = max_date
-elif date_selection == 'Other':
-    start_date, end_date = st.sidebar.slider('Select date range', value=[min_date.date(), max_date.date()], min_value=min_date.date(), max_value=max_date.date(), key='date_input')
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date).replace(hour=23, minute=59)
+if date_selection == 'Other':
+    if min_date == max_date:  # Check if min and max dates are the same
+        start_date = min_date
+        end_date = max_date.replace(hour=23, minute=59)
+    else:
+        start_date, end_date = st.sidebar.slider(
+            'Select date range',
+            value=[min_date.date(), max_date.date()],
+            min_value=min_date.date(),
+            max_value=max_date.date(),
+            key='date_input'
+        )
+        start_date = pd.to_datetime(start_date)
+        end_date = pd.to_datetime(end_date).replace(hour=23, minute=59)
 else:
     end_date = pd.to_datetime('today')
     if date_selection == 'Last Week':
@@ -164,6 +159,10 @@ else:
         start_date = end_date - pd.DateOffset(months=1)
     elif date_selection == 'All Time Collected':
         start_date = min_date
+
+if start_date > end_date:
+    start_date, end_date = end_date, start_date
+
 selected_date_range = (start_date, end_date)
 
 filtered_data = st.session_state[f'locations_reviews_merged_{brand}'][
