@@ -9,7 +9,7 @@ from scripts.viz import sentiment_color
 
 def create_network_graph(attributes, slider_entities):
     # Get top entities by total attribute counts
-    pivot_attrs = attributes.pivot(index='ENTITY', columns='ATTRIBUTE', values='COUNT').fillna(0)
+    pivot_attrs = attributes.pivot(index='entity', columns='attribute', values='count').fillna(0)
     pivot_attrs['Total'] = pivot_attrs.sum(axis=1)
     top_entities = pivot_attrs.nlargest(slider_entities, 'Total').index.tolist()
     
@@ -43,10 +43,10 @@ def calculate_entity_positions(entities, radius=1.5):
 def add_nodes_and_edges(G, top_entities, attributes):
     for entity in top_entities:
         G.add_node(entity, node_type='entity')
-        entity_attrs = attributes[attributes['ENTITY'] == entity]
+        entity_attrs = attributes[attributes['entity'] == entity]
         
         for _, row in entity_attrs.iterrows():
-            attr, count = row['ATTRIBUTE'], row['COUNT']
+            attr, count = row['attribute'], row['count']
             G.add_node(attr, node_type='attribute') if attr not in G else None
             G.add_edge(entity, attr, weight=count)
 
@@ -110,12 +110,10 @@ def draw_network(G, pos, top_entities):
 
 @st.fragment
 def display_network_graph(attributes):
+    st.markdown("##### Entity-Attribute Relations")
+    st.caption("_See up to top 15 mentioned entities and their attributes._")
     col1, col2 = st.columns([0.9, 0.1], vertical_alignment='center')
-    unique_entities_count = attributes['ENTITY'].nunique()
-    max_value = unique_entities_count if unique_entities_count < 15 else 15
-    col1.caption(f"_See up to top {max_value} mentioned entities and their attributes. The wider the line, the more times the attribute was mentioned._")
-    num_entities = col2.number_input("Select the number of entities", min_value=1, max_value=max_value, value=max_value if max_value < 5 else 5)
-    
+    num_entities = col2.number_input("Select the number of entities", min_value=1, max_value=15, value=5)
     fig = create_network_graph(attributes, num_entities)
     col1.pyplot(fig, use_container_width=True)
 
@@ -168,29 +166,7 @@ def ai_analysis(data, attributes, sentences):
     
     ## ENTITY-ATTRIBUTE RELATIONS
     st.divider()
-    st.markdown("##### Entity-Attribute Relations")
-    filtered_reviews_ids = data['REVIEW_ID'].unique()
-
-    attributes = attributes[attributes['REVIEW_ID'].isin(filtered_reviews_ids)]
-    attributes = attributes.dropna(subset=['ENTITY'])
-    attributes = attributes[attributes['ATTRIBUTE'].notna() & (attributes['ATTRIBUTE'] != '')]
-
-    attributes['ENTITY'] = attributes['ENTITY'].apply(lambda x: 'paní' if 'paní' in x and len(x.split()) > 1 else x)
-    attributes['ENTITY'] = attributes['ENTITY'].apply(lambda x: 'pobočka' if 'pobočka' in x and len(x.split()) > 1 else x)
-    attributes['ENTITY'] = attributes['ENTITY'].replace({'pristup': 'přístup', 'pani': 'paní'})
-    attributes.loc[(attributes['ENTITY'] == 'paní') & (attributes['ATTRIBUTE'] == 'pomocný'), 'ATTRIBUTE'] = 'pomocná'
-    attributes = attributes[~((attributes['ENTITY'] == 'pojišťovna') & (attributes['ATTRIBUTE'] == 'Dvůr Králové nad Labem'))]
-
-    attributes = attributes.groupby(['ENTITY', 'ATTRIBUTE']).size().reset_index(name='COUNT')
-    attributes = attributes[attributes['COUNT'] > 2]
-
-    attributes_sorted = attributes.sort_values(['ENTITY', 'COUNT'], ascending=[True, False])  # Sort by ENTITY and COUNT
-    attributes_limited = attributes_sorted.groupby('ENTITY').head(8)
-
-    if attributes_limited is not None and not attributes_limited.empty:
-        display_network_graph(attributes_limited)
-    else: 
-        st.info('No entity-attribute relations found for the selected filters.', icon=':material/info:')
+    display_network_graph(attributes)
 
     ## ENTITY CLASSIFICATION
     @st.fragment
