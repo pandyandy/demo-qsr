@@ -37,7 +37,7 @@ locations_data = pd.read_csv(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
-bot_data = pd.read_csv(st.secrets['bot_path'])
+#bot_data = pd.read_csv(st.secrets['bot_path'])
 
 options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
 icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
@@ -216,4 +216,4 @@ if menu_id == 'Support':
     support(filtered_data, reviews_data)
 
 if menu_id == 'Assistant':
-    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'], bot_data=bot_data)
+    assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'])# bot_data=bot_data)
