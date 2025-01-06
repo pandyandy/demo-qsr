@@ -61,11 +61,13 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
+
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['BRAND'].unique().tolist())
 
-brand = st.sidebar.multiselect('Select a brand', st.session_state.brand_options, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
+brand = st.sidebar.selectbox('Select a brand', st.session_state.brand_options, index=0, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
 st.session_state.filtered_locations = locations_data[locations_data['BRAND'] == brand]
+
 #if len(brand) > 0:
  #   st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
 #else:
