@@ -46,7 +46,7 @@ menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orienta
 
 #attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
 pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
-attributes = attributes[~attributes['ENTITY'].isin(pronouns_to_remove)]
+attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
 #attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()#
 #attributes = attributes[attributes['count'] > 2]
 
