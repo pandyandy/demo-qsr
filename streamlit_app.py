@@ -44,11 +44,11 @@ icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
-#attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
-pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
+attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
+pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They', 'whataburger', 'Whataburger', "Wendy's"]
 attributes = attributes[~attributes['entity'].isin(pronouns_to_remove)]
-#attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()#
-#attributes = attributes[attributes['count'] > 2]
+attributes = attributes.groupby(['entity', 'attribute'])['count'].sum().reset_index()
+attributes = attributes[attributes['count'] > 2]
 
 # Convert REVIEW_DATE to datetime, handling NaT values and potential format issues
 reviews_data['REVIEW_DATE'] = pd.to_datetime(reviews_data['REVIEW_DATE'], errors='coerce', format='mixed')
