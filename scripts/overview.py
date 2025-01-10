@@ -7,13 +7,24 @@ rating_colors = {0: '#B3B3B3', 1: '#EA4335', 2: '#e98f41', 3: '#FBBC05', 4: '#a5
 
 @st.fragment
 def overview(data):
-    data_rating_sorted = (
-        data
-        .groupby(['PLACE_ID', 'ADDRESS', 'PLACE_TOTAL_SCORE', 'PLACE_URL'])
-        .agg({'RATING': [lambda x: x.tolist(), 'count']})  
-        .reset_index()  
-        .sort_values(by=['PLACE_TOTAL_SCORE', ('RATING', 'count')], ascending=[False, False])  
-    )
+    if data['BRAND'].nunique() > 1:
+        data['BRAND_ADDRESS'] = data['BRAND'] + ' - ' + data['ADDRESS'].str[:-5]  # Remove last 5 characters from the address
+        data_rating_sorted = (
+            data
+            .groupby(['PLACE_ID', 'BRAND_ADDRESS', 'PLACE_TOTAL_SCORE', 'PLACE_URL'])
+            .agg({'RATING': [lambda x: x.tolist(), 'count']})  
+            .reset_index()  
+            .sort_values(by=['PLACE_TOTAL_SCORE', ('RATING', 'count')], ascending=[False, False])  
+        )
+    else:
+        data_rating_sorted = (
+            data
+            .assign(ADDRESS=data['ADDRESS'].str.slice(0, -5))  # Remove last 5 characters from the address
+            .groupby(['PLACE_ID', 'ADDRESS', 'PLACE_TOTAL_SCORE', 'PLACE_URL'])  
+            .agg({'RATING': [lambda x: x.tolist(), 'count']})  
+            .reset_index()  
+            .sort_values(by=['PLACE_TOTAL_SCORE', ('RATING', 'count')], ascending=[False, False])  
+        )
     data_rating_sorted.columns = ['PLACE_ID', 'ADDRESS', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'RATING', 'COUNT']
 
     ## RATING DISTRIBUTION FOR TOP/BOTTOM X    
@@ -28,7 +39,6 @@ def overview(data):
     
     with col1:
         top_locations = data_rating_sorted[data_rating_sorted['COUNT'] >= num_reviews].head(top_x)
-
         top_rating_distribution = top_locations['RATING'].apply(lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()).fillna(0)
         top_rating_distribution.index = top_locations['ADDRESS']
         top_rating_distribution = top_rating_distribution.sort_index(axis=1, ascending=False).iloc[::-1]

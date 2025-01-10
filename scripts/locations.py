@@ -15,14 +15,13 @@ def get_color(rating):
         return [52, 168, 83, 255]
 
 def locations(data):
-    map_data = data.groupby(['ADDRESS', 'LATITUDE', 'LONGITUDE', 'STATE', 'PLACE_TOTAL_SCORE']).agg({
+    map_data = data.groupby(['ADDRESS', 'LATITUDE', 'LONGITUDE', 'STATE', 'BRAND', 'PLACE_TOTAL_SCORE']).agg({
         'REVIEW_ID': 'count',
         'RATING': 'mean'
     }).reset_index().rename(columns={'REVIEW_ID': 'COUNT'})
     if map_data.empty:
         st.info("No map data available.", icon=':material/info:')
         st.stop()
-    
     map_data['RATING'] = map_data['RATING'].round(2)
     state_reviews = map_data.groupby('STATE')['COUNT'].sum().reset_index()
     state_reviews = state_reviews.sort_values('COUNT', ascending=False)
@@ -61,7 +60,7 @@ def locations(data):
         map_style=None,
         layers=[column_layer],
         tooltip={
-            "text": "Location: {ADDRESS}\nLocation Rating: {PLACE_TOTAL_SCORE}\nCollected Reviews: {COUNT}\nAvg Review Rating: {RATING}",
+            "text": "Brand: {BRAND}\nLocation: {ADDRESS}\nLocation Rating: {PLACE_TOTAL_SCORE}\nCollected Reviews: {COUNT}\nAvg Review Rating: {RATING}",
             "style": {
                 "backgroundColor": "white",
                 "color": "black",

@@ -21,10 +21,10 @@ def support(data, reviews_data):
     #filtered_review_data_detailed['RATING'] = filtered_review_data_detailed['RATING'].astype(int)
     data['CUSTOMER_SUCCESS_NOTES'] = data['CUSTOMER_SUCCESS_NOTES'].fillna('')
     df_to_edit = st.data_editor(
-        data[['SELECT', 'REVIEW_ID','REVIEWER_NAME', 'OVERALL_SENTIMENT', 'REVIEW_TEXT', 'RATING', 'ADDRESS',
+        data[['SELECT', 'REVIEW_ID','REVIEWER_NAME', 'OVERALL_SENTIMENT', 'REVIEW_TEXT', 'RATING', 'BRAND', 'ADDRESS',
                                     'REVIEW_DATE', 'CUSTOMER_SUCCESS_NOTES', 'REVIEW_URL', 'STATUS', 'RESPONSE']],
                                     #.style.map(sentiment_color, subset=["OVERALL_SENTIMENT"]),
-        column_order=('SELECT', 'REVIEW_DATE', 'REVIEWER_NAME', 'RATING', 'REVIEW_TEXT', 'OVERALL_SENTIMENT', 'STATUS', 'ADDRESS', 'REVIEW_URL', 'RESPONSE', 'CUSTOMER_SUCCESS_NOTES'), 
+        column_order=('SELECT', 'REVIEW_DATE', 'REVIEWER_NAME', 'RATING', 'REVIEW_TEXT', 'OVERALL_SENTIMENT', 'STATUS', 'BRAND', 'ADDRESS', 'REVIEW_URL', 'RESPONSE', 'CUSTOMER_SUCCESS_NOTES'), 
         column_config={
             'SELECT': 'Select',
             'REVIEW_DATE': 'Date',
@@ -47,6 +47,9 @@ def support(data, reviews_data):
                             '✔️ Resolved',
                             '🚫 Spam',
                         ]),
+                    'BRAND': st.column_config.Column(
+                        "Brand",
+                        width="small"),
                     'ADDRESS': st.column_config.Column(
                         "Location",
                         width="medium"),
@@ -58,7 +61,7 @@ def support(data, reviews_data):
                     'RESPONSE': 'Response',
                     'CUSTOMER_SUCCESS_NOTES': 'Customer Success Notes'
                     },
-        disabled=['OVERALL_SENTIMENT', 'REVIEW_TEXT', 'RATING', 'REVIEW_DATE', 'REVIEWER_NAME', 'ADDRESS', 'REVIEW_URL', 'RESPONSE'],
+        disabled=['OVERALL_SENTIMENT', 'REVIEW_TEXT', 'RATING', 'REVIEW_DATE', 'REVIEWER_NAME', 'BRAND', 'ADDRESS', 'REVIEW_URL', 'RESPONSE'],
         use_container_width=True, 
         hide_index=True
     )

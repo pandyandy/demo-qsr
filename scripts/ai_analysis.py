@@ -334,7 +334,7 @@ def ai_analysis(data, attributes, sentences):
             st.info("No reviews with feedback text available for the selected filters.", icon=':material/info:')
             st.stop()
 
-        columns = ['REVIEW_DATE', 'RATING', 'REVIEW_TEXT', 'OVERALL_SENTIMENT', 'ADDRESS', 'CATEGORY', 'CATEGORY_GROUP', 'TOPIC', 'ENTITY', 'REVIEWER_NAME', 'REVIEW_URL']
+        columns = ['REVIEW_DATE', 'RATING', 'REVIEW_TEXT', 'OVERALL_SENTIMENT', 'BRAND', 'ADDRESS', 'CATEGORY', 'CATEGORY_GROUP', 'TOPIC', 'ENTITY', 'REVIEWER_NAME', 'REVIEW_URL']
         st.dataframe(filtered_data[columns],
                      #.style.map(sentiment_color, subset=["OVERALL_SENTIMENT"]),
                     column_config={
@@ -344,6 +344,9 @@ def ai_analysis(data, attributes, sentences):
                             'Review',
                             width="large"),
                         'OVERALL_SENTIMENT': 'Sentiment',
+                        'BRAND': st.column_config.Column(
+                            'Brand',
+                            width="small"),
                         'ADDRESS': st.column_config.Column(
                             'Location',
                             width="small"),
