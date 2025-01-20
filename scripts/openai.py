@@ -84,7 +84,7 @@ def assistant(file_id, assistant_id, bot_data):
         if message["role"] == "user":
             avatar = '🧑‍💻'
         else:
-            avatar = st.secrets['MINI_LOGO_URL']
+            avatar = '🤖'
         
         with st.chat_message(message["role"], avatar=avatar):
             if "[Image:" in message["content"]:
@@ -155,7 +155,7 @@ def assistant(file_id, assistant_id, bot_data):
                 )
                 newest_message = messages.data[0]
                 complete_message_content = ""
-                with st.chat_message("assistant", avatar=st.secrets['MINI_LOGO_URL']):
+                with st.chat_message("assistant", avatar='🤖'):
                     for message_content in newest_message.content:
                         if hasattr(message_content, "image_file"):
                             file_id = message_content.image_file.file_id

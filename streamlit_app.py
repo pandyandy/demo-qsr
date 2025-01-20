@@ -18,7 +18,7 @@ st.set_page_config(layout="wide")
 
 ASSISTANT_ID=st.secrets['ASSISTANT_ID']
 FILE_ID=st.secrets['FILE_ID']
-LOGO_URL=st.secrets['LOGO_URL']
+#LOGO_URL=st.secrets['LOGO_URL']
 
 # Initialize session state variables
 session_defaults = {
@@ -52,14 +52,14 @@ attributes = attributes[~attributes['ENTITY'].isin(pronouns_to_remove)]
 
 # Convert REVIEW_DATE to datetime, handling NaT values and potential format issues
 reviews_data['REVIEW_DATE'] = pd.to_datetime(reviews_data['REVIEW_DATE'], errors='coerce', format='mixed')
-st.sidebar.markdown(
-    f'''
-        <div style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
-            <img src="{LOGO_URL}" alt="Logo" width="200">
-        </div>
-    ''',
-    unsafe_allow_html=True
-)
+#st.sidebar.markdown(
+#    f'''
+#        <div style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
+#            <img src="{LOGO_URL}" alt="Logo" width="200">
+#        </div>
+#    ''',
+#    unsafe_allow_html=True
+#)
 
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['BRAND'].unique().tolist())
