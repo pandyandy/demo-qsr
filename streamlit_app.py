@@ -39,8 +39,8 @@ sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
 bot_data = pd.read_csv(st.secrets['bot_path'])
 
-options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
-icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
+options = ['Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
+icons=['pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
@@ -197,8 +197,8 @@ st.sidebar.divider()
 st.sidebar.caption(f"**Data last updated on:** {data_collected_at}.")
 
 ## TABS
-if menu_id == 'About':
-    introduction()
+#if menu_id == 'About':
+#    introduction()
     
 if menu_id == 'Locations':    
     metrics(location_count_total, review_count_total, avg_rating_total, filtered_data)
