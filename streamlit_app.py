@@ -66,10 +66,10 @@ if 'brand_options' not in st.session_state:
 
 brand = st.sidebar.multiselect('Select a brand', st.session_state.brand_options, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
 
-if len(brand) > 0:
-    st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
-else:
-    st.session_state.filtered_locations = locations_data
+#if len(brand) > 0:
+st.session_state.filtered_locations = locations_data[locations_data['BRAND'] == brand]
+#else:
+#st.session_state.filtered_locations = locations_data 
 
 #st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
 
