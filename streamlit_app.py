@@ -181,8 +181,10 @@ filtered_data = filtered_data[
     filtered_data['RATING'].isin(selected_rating)
 ]
 
+# Filter out NaT values from REVIEW_DATE before applying the date range filter
+filtered_data = filtered_data.dropna(subset=['REVIEW_DATE'])
 filtered_data = filtered_data[
-    filtered_data['REVIEW_DATE'].between(selected_date_range[0].strftime('%Y-%m-%d %H:%M'), selected_date_range[1].strftime('%Y-%m-%d %H:%M'))
+    filtered_data['REVIEW_DATE'].between(selected_date_range[0], selected_date_range[1])
 ]   
 
 # Order by REVIEW_DATE
