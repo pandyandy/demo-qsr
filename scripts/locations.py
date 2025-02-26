@@ -41,7 +41,7 @@ def locations(data):
         data=map_data,
         disk_resolution=12,
         radius=200,
-        elevation_scale = 500,
+        elevation_scale = 100,
         get_position=["LONGITUDE", "LATITUDE"],
         get_color="color",
         get_elevation="COUNT",
