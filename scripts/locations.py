@@ -41,7 +41,7 @@ def locations(data):
         data=map_data,
         get_position=["LONGITUDE", "LATITUDE"],
         get_fill_color="color",
-        get_radius=500,
+        get_radius=100,
         pickable=True
     )
 
