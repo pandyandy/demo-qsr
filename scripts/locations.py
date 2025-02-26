@@ -41,7 +41,7 @@ def locations(data):
         data=map_data,
         disk_resolution=12,
         radius=200,
-        elevation_scale = 100,
+        elevation_scale = 20,
         get_position=["LONGITUDE", "LATITUDE"],
         get_color="color",
         get_elevation="COUNT",
@@ -51,7 +51,7 @@ def locations(data):
     view_state = pdk.ViewState(
         latitude=center_lat,
         longitude=center_long,
-        zoom=8,
+        zoom=10,
         pitch=50
     )
 
