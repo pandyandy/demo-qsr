@@ -98,8 +98,9 @@ else:
     selected_state = state_options
 
 # City Selection
-#city_options = sorted(locations_reviews_merged['CITY'].unique().tolist())
-city_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['CITY'].unique().tolist())
+city_options = sorted(
+    [city for city in st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['CITY'].unique().tolist() if isinstance(city, str)]
+)
 city = st.sidebar.multiselect('Select a city', city_options, placeholder='All')
 if len(city) > 0:
     selected_city = city
