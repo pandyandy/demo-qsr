@@ -36,12 +36,15 @@ def locations(data):
 
     map_data['color'] = map_data['RATING'].apply(get_color)
     
-    scatterplot_layer = pdk.Layer(
-        "ScatterplotLayer",
+    column_layer = pdk.Layer(
+        "ColumnLayer",
         data=map_data,
+        disk_resolution=12,
+        radius=200,
+        elevation_scale = 500,
         get_position=["LONGITUDE", "LATITUDE"],
-        get_fill_color="color",
-        get_radius=100,
+        get_color="color",
+        get_elevation="COUNT",
         pickable=True
     )
 
@@ -55,7 +58,7 @@ def locations(data):
     deck = pdk.Deck(
         initial_view_state=view_state,
         map_style=None,
-        layers=[scatterplot_layer],
+        layers=[column_layer],
         tooltip={
             "text": "Brand: {BRAND}\nLocation: {ADDRESS}\nLocation Rating: {PLACE_TOTAL_SCORE}\nCollected Reviews: {COUNT}\nAvg Review Rating: {RATING}",
             "style": {
@@ -66,4 +69,4 @@ def locations(data):
         }
     )
     st.pydeck_chart(deck, use_container_width=True, height=700)
-    st.caption("_The color of the dot represents the average rating._")
+    st.caption("_The height of the column represents the number of collected reviews, the color represents the average rating._")
