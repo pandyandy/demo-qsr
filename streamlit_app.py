@@ -60,7 +60,7 @@ st.sidebar.markdown(
     ''',
     unsafe_allow_html=True
 )
-
+placeholder = st.empty()
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['BRAND'].unique().tolist())
 
@@ -89,26 +89,18 @@ data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max
 review_count_total = len(st.session_state[f'locations_reviews_merged_{brand}'])
 avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].mean(), 2)
 
-# State Selection
-state_options = sorted(st.session_state.filtered_locations['STATE'].unique().tolist())
-state = st.sidebar.multiselect('Select a state', state_options, placeholder='All')
-if len(state) > 0:
-    selected_state = state
-else:
-    selected_state = state_options
 
-# City Selection
-#city_options = sorted(locations_reviews_merged['CITY'].unique().tolist())
-city_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['CITY'].unique().tolist())
-city = st.sidebar.multiselect('Select a city', city_options, placeholder='All')
-if len(city) > 0:
-    selected_city = city
-    location_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['CITY'].isin(selected_city)]['ADDRESS'].unique().tolist())
+# State Selection
+source_options = sorted(st.session_state.filtered_locations['REVIEW_ORIGIN'].unique().tolist())
+source = placeholder.sidebar.multiselect('Select a source', source_options, placeholder='All')
+if len(source) > 0:
+    selected_source = source
 else:
-    selected_city = city_options
-    location_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['ADDRESS'].unique().tolist())
+    selected_source = source_options
+
 
 # Location Selection
+location_options = sorted(st.session_state.filtered_locations['ADDRESS'].unique().tolist())
 location = st.sidebar.multiselect('Select a location', location_options, placeholder='All')
 if len(location) > 0:
     selected_location = location
@@ -166,10 +158,10 @@ if start_date > end_date:
 selected_date_range = (start_date, end_date)
 
 filtered_data = st.session_state[f'locations_reviews_merged_{brand}'][
-    st.session_state[f'locations_reviews_merged_{brand}']['STATE'].isin(selected_state)
+    st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_ORIGIN'].isin(selected_source)
 ]
 filtered_data = filtered_data[
-    filtered_data['CITY'].isin(selected_city)
+    filtered_data['ADDRESS'].isin(selected_location)
 ]
 filtered_data = filtered_data[
     filtered_data['ADDRESS'].isin(selected_location)
