@@ -60,7 +60,7 @@ st.sidebar.markdown(
     ''',
     unsafe_allow_html=True
 )
-placeholder = st.empty()
+
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['BRAND'].unique().tolist())
 
@@ -89,18 +89,16 @@ data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max
 review_count_total = len(st.session_state[f'locations_reviews_merged_{brand}'])
 avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].mean(), 2)
 
-
-# State Selection
-source_options = sorted(st.session_state.filtered_locations['REVIEW_ORIGIN'].unique().tolist())
-source = placeholder.sidebar.multiselect('Select a source', source_options, placeholder='All')
+# Source Selection
+source_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_ORIGIN'].unique().tolist())
+source = st.sidebar.multiselect('Select a source', source_options, placeholder='All')
 if len(source) > 0:
     selected_source = source
 else:
     selected_source = source_options
 
-
 # Location Selection
-location_options = sorted(st.session_state.filtered_locations['ADDRESS'].unique().tolist())
+location_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['ADDRESS'].unique().tolist())
 location = st.sidebar.multiselect('Select a location', location_options, placeholder='All')
 if len(location) > 0:
     selected_location = location
