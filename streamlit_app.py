@@ -37,7 +37,7 @@ locations_data = pd.read_csv(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
-bot_data = pd.read_csv(st.secrets['reviews_path'])
+bot_data = pd.read_csv(st.secrets['bot_path'])
 
 options=['Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant'] #'About',
 icons=['pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot'] #'info-circle', 
