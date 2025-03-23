@@ -71,8 +71,6 @@ if len(brand) > 0:
 else:
     st.session_state.filtered_locations = locations_data
 
-#st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
-
 # Merge locations and reviews data for the specific brand and save to session state
 if f'locations_reviews_merged_{brand}' not in st.session_state:
     st.session_state[f'locations_reviews_merged_{brand}'] = pd.merge(
@@ -82,7 +80,8 @@ if f'locations_reviews_merged_{brand}' not in st.session_state:
         how='inner'
     )
 
-location_count_total = len(st.session_state.filtered_locations)
+# Calculate the correct location count by counting unique PLACE_IDs
+location_count_total = st.session_state.filtered_locations['ADDRESS'].nunique()
 data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max()
 
 # Calculate review count and average rating based on selected brand

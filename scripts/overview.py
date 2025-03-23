@@ -7,6 +7,7 @@ rating_colors = {0: '#B3B3B3', 1: '#EA4335', 2: '#e98f41', 3: '#FBBC05', 4: '#a5
 
 @st.fragment
 def overview(data):
+    st.write(data)
     # Create combined identifier based on location and review source
     data['LOCATION_SOURCE'] = data['ADDRESS'] + ' - ' + data['REVIEW_ORIGIN']
     # Group and aggregate data
