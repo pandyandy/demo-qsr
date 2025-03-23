@@ -33,11 +33,11 @@ for key, value in session_defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-locations_data = pd.read_csv('ALL_BRANDS_LOCATIONS.csv')
-reviews_data = read_data('ALL_BRANDS_REVIEWS.csv')
-sentences_data = pd.read_csv('ALL_BRANDS_SENTENCE_ENTITY.csv')
-attributes = pd.read_csv('ENTITY_ATTRIBUTE_COUNT.csv')
-bot_data = pd.read_csv('ALL_BRANDS_REVIEWS.csv')
+locations_data = pd.read_csv(st.secrets['locations_path'])
+reviews_data = read_data(st.secrets['reviews_path'])
+sentences_data = pd.read_csv(st.secrets['sentences_path'])
+attributes = pd.read_csv(st.secrets['attributes_path'])
+bot_data = pd.read_csv(st.secrets['reviews_path'])
 
 options=['Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant'] #'About',
 icons=['pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot'] #'info-circle', 
