@@ -15,7 +15,7 @@ def get_color(rating):
         return [52, 168, 83, 255]
 
 def locations(data):
-    map_data = data.groupby(['ADDRESS', 'LATITUDE', 'LONGITUDE', 'STATE', 'BRAND', 'PLACE_TOTAL_SCORE']).agg({
+    map_data = data.groupby(['ADDRESS', 'LATITUDE', 'LONGITUDE', 'BRAND', 'PLACE_TOTAL_SCORE']).agg({
         'REVIEW_ID': 'count',
         'RATING': 'mean'
     }).reset_index().rename(columns={'REVIEW_ID': 'COUNT'})
@@ -23,16 +23,15 @@ def locations(data):
         st.info("No map data available.", icon=':material/info:')
         st.stop()
     map_data['RATING'] = map_data['RATING'].round(2)
-    state_reviews = map_data.groupby('STATE')['COUNT'].sum().reset_index()
-    state_reviews = state_reviews.sort_values('COUNT', ascending=False)
-    state_with_most_reviews = state_reviews.iloc[0]['STATE']
-    state_coords = map_data[map_data['STATE'] == state_with_most_reviews].agg({
+    
+    # Calculate center coordinates from all data points
+    center_coords = map_data.agg({
         'LATITUDE': 'mean',
         'LONGITUDE': 'mean'
     })
 
-    center_lat = state_coords['LATITUDE']
-    center_long = state_coords['LONGITUDE']
+    center_lat = center_coords['LATITUDE']
+    center_long = center_coords['LONGITUDE']
 
     map_data['color'] = map_data['RATING'].apply(get_color)
     

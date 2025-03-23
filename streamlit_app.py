@@ -122,7 +122,7 @@ else:
     selected_rating = rating_options
 
 # Date Selection
-date_options = ['All Time Collected', 'Last Week', 'Last Month', 'Other']
+date_options = ['Current Year', 'Last Year', 'All Time Collected', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
 min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
 max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
@@ -143,10 +143,10 @@ if date_selection == 'Other':
         end_date = pd.to_datetime(end_date).replace(hour=23, minute=59)
 else:
     end_date = pd.to_datetime('today')
-    if date_selection == 'Last Week':
-        start_date = end_date - pd.DateOffset(weeks=1)
-    elif date_selection == 'Last Month':
-        start_date = end_date - pd.DateOffset(months=1)
+    if date_selection == 'Current Year':
+        start_date = pd.to_datetime(f"{end_date.year}-01-01")
+    elif date_selection == 'Last Year':
+        start_date = end_date - pd.DateOffset(years=1)
     elif date_selection == 'All Time Collected':
         start_date = min_date
 

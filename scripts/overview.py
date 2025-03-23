@@ -7,40 +7,61 @@ rating_colors = {0: '#B3B3B3', 1: '#EA4335', 2: '#e98f41', 3: '#FBBC05', 4: '#a5
 
 @st.fragment
 def overview(data):
-    if data['BRAND'].nunique() > 1:
-        data['BRAND_ADDRESS'] = data['BRAND'] + ' - ' + data['ADDRESS'].str[:-5]  # Remove last 5 characters from the address
-        data_rating_sorted = (
-            data
-            .groupby(['PLACE_ID', 'BRAND_ADDRESS', 'PLACE_TOTAL_SCORE', 'PLACE_URL'])
-            .agg({'RATING': [lambda x: x.tolist(), 'count']})  
-            .reset_index()  
-            .sort_values(by=['PLACE_TOTAL_SCORE', ('RATING', 'count')], ascending=[False, False])  
-        )
-    else:
-        data_rating_sorted = (
-            data
-            .assign(ADDRESS=data['ADDRESS'].str.slice(0, -5))  # Remove last 5 characters from the address
-            .groupby(['PLACE_ID', 'ADDRESS', 'PLACE_TOTAL_SCORE', 'PLACE_URL'])  
-            .agg({'RATING': [lambda x: x.tolist(), 'count']})  
-            .reset_index()  
-            .sort_values(by=['PLACE_TOTAL_SCORE', ('RATING', 'count')], ascending=[False, False])  
-        )
-    data_rating_sorted.columns = ['PLACE_ID', 'ADDRESS', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'RATING', 'COUNT']
+    # Create combined identifier based on location and review source
+    data['LOCATION_SOURCE'] = data['ADDRESS'] + ' - ' + data['REVIEW_ORIGIN']
+    # Group and aggregate data
+    data_rating_sorted = (
+        data
+        .groupby(['PLACE_ID', 'LOCATION_SOURCE', 'BRAND', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'REVIEW_ORIGIN'])
+        .agg({'RATING': [lambda x: x.tolist(), 'count']})  
+        .reset_index()  
+        .sort_values(by=['PLACE_TOTAL_SCORE', ('RATING', 'count')], ascending=[False, False])  
+    )
+    
+    data_rating_sorted.columns = ['PLACE_ID', 'LOCATION_SOURCE', 'BRAND', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'REVIEW_ORIGIN', 'RATING', 'COUNT']
 
     ## RATING DISTRIBUTION FOR TOP/BOTTOM X    
-    col1, col2, col3 = st.columns([0.42, 0.42, 0.16], vertical_alignment='center', gap='small')
-    with col3:
-        st.caption("Select the number of locations")
-        top_x = st.slider("Locations", min_value=1, max_value=20, value=5, label_visibility='collapsed')
-        min_count = data_rating_sorted['COUNT'].min()
-        max_count = data_rating_sorted['COUNT'].max()
-        st.caption("Select the minimum number of reviews")   
-        num_reviews = st.number_input("Reviews", min_value=min_count, max_value=max_count, value=min_count, label_visibility='collapsed')
+
+    top_locations = data_rating_sorted
+    unique_sources = top_locations['REVIEW_ORIGIN'].nunique()
     
-    with col1:
-        top_locations = data_rating_sorted[data_rating_sorted['COUNT'] >= num_reviews].head(top_x)
-        top_rating_distribution = top_locations['RATING'].apply(lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()).fillna(0)
-        top_rating_distribution.index = top_locations['ADDRESS']
+    if unique_sources <= 2:
+        # Split into columns if 2 or fewer sources
+        source_cols = st.columns(max(1, unique_sources))
+        
+        for idx, (source, source_data) in enumerate(top_locations.groupby('REVIEW_ORIGIN')):
+            with source_cols[idx]:
+                source_rating_distribution = source_data['RATING'].apply(
+                    lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()
+                ).fillna(0)
+                source_rating_distribution.index = source_data['BRAND']
+                source_rating_distribution = source_rating_distribution.sort_index(axis=1, ascending=False).iloc[::-1]
+                
+                fig = px.bar(
+                    source_rating_distribution,
+                    x=source_rating_distribution.columns,
+                    y=source_rating_distribution.index,
+                    orientation='h',
+                    labels={'value': 'Percentage', 'index': 'Brand', 'rating': 'Rating', 'variable': 'Rating'},
+                    title=f'Rating Distribution - {source}',
+                    color_discrete_map=rating_colors_index
+                )
+                fig.update_traces(hovertemplate='%{x:.2%}<extra></extra>')
+                fig.update_layout(
+                    showlegend=False, 
+                    xaxis_title=None, 
+                    yaxis_title=None, 
+                    xaxis_tickformat='.0%',
+                    xaxis={'showticklabels': False},
+                    yaxis={'tickvals': source_rating_distribution.index, 'ticktext': source_rating_distribution.index}
+                )
+                st.plotly_chart(fig, use_container_width=True)
+    else:
+        # Original combined view for more than 2 sources
+        top_rating_distribution = top_locations['RATING'].apply(
+            lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()
+        ).fillna(0)
+        top_rating_distribution.index = top_locations['BRAND']
         top_rating_distribution = top_rating_distribution.sort_index(axis=1, ascending=False).iloc[::-1]
         
         fig_top = px.bar(
@@ -48,8 +69,8 @@ def overview(data):
             x=top_rating_distribution.columns,
             y=top_rating_distribution.index,
             orientation='h',
-            labels={'value': 'Percentage', 'index': 'Location', 'rating': 'Rating', 'variable': 'Rating'},
-            title=f'Rating Distribution for Top {top_x} Locations',
+            labels={'value': 'Percentage', 'index': 'Brand', 'rating': 'Rating', 'variable': 'Rating'},
+            title=f'Rating Distribution by Brand and Source',
             color_discrete_map=rating_colors_index
         )
         fig_top.update_traces(hovertemplate='%{x:.2%}<extra></extra>')
@@ -62,37 +83,10 @@ def overview(data):
             yaxis={'tickvals': top_rating_distribution.index, 'ticktext': top_rating_distribution.index}
         )
         st.plotly_chart(fig_top, use_container_width=True)
-        
-    with col2:
-        bottom_locations = data_rating_sorted[data_rating_sorted['COUNT'] >= num_reviews].tail(top_x)
-        
-        bottom_rating_distribution = bottom_locations['RATING'].apply(lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()).fillna(0)
-        bottom_rating_distribution.index = bottom_locations['ADDRESS']
-        bottom_rating_distribution = bottom_rating_distribution.sort_index(axis=1, ascending=False)
-
-        fig_bottom = px.bar(
-            bottom_rating_distribution,
-            x=bottom_rating_distribution.columns,
-            y=bottom_rating_distribution.index,
-            orientation='h',
-            labels={'value': 'Percentage', 'index': 'Location', 'rating': 'Rating', 'variable': 'Rating'},
-            title=f'Rating Distribution for Bottom {top_x} Locations',
-            color_discrete_map=rating_colors_index
-        )
-        fig_bottom.update_traces(hovertemplate='%{x:.2%}<extra></extra>')
-        fig_bottom.update_layout(
-            showlegend=False, 
-            xaxis_title=None, 
-            yaxis_title=None, 
-            xaxis_tickformat='.0%',
-            xaxis={'showticklabels': False},
-            yaxis={'tickvals': bottom_rating_distribution.index, 'ticktext': bottom_rating_distribution.index}
-        )
-        st.plotly_chart(fig_bottom, use_container_width=True)
 
     st.dataframe(
-        data_rating_sorted[data_rating_sorted['COUNT'] >= num_reviews],
-        column_order=('PLACE_TOTAL_SCORE', 'ADDRESS', 'RATING', 'COUNT', 'PLACE_URL'),
+        data_rating_sorted,
+        column_order=('PLACE_TOTAL_SCORE', 'BRAND', 'REVIEW_ORIGIN', 'RATING', 'COUNT', 'PLACE_URL'),
         column_config={
             "PLACE_TOTAL_SCORE": st.column_config.ProgressColumn(
                 "Location Rating",
@@ -101,9 +95,13 @@ def overview(data):
                 format="⭐️ %.1f",
                 max_value=5
             ),
-            "ADDRESS": st.column_config.Column(
-                "Location",
+            "BRAND": st.column_config.Column(
+                "Brand",
                 width="medium",
+            ),
+            "REVIEW_ORIGIN": st.column_config.Column(
+                "Source",
+                width="small",
             ),
             "RATING": st.column_config.LineChartColumn(
                 "Review Rating per Date",
@@ -124,7 +122,6 @@ def overview(data):
         },
         hide_index=True, 
         use_container_width=True)
-    
     col1, col2 = st.columns([0.2, 0.8], gap='medium', vertical_alignment='top')
     ## COUNT OF RATINGS
     with col1: 
