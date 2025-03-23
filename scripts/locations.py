@@ -34,16 +34,20 @@ def locations(data):
     center_long = center_coords['LONGITUDE']
 
     map_data['color'] = map_data['RATING'].apply(get_color)
+    
+    # Normalize heights if you want a fixed maximum height
+    max_count = map_data['COUNT'].max()
+    map_data['normalized_count'] = map_data['COUNT'] / max_count * 100  # Scale to 0-100 range
 
     column_layer = pdk.Layer(
         "ColumnLayer",
         data=map_data,
         disk_resolution=12,
         radius=50,
-        elevation_scale = 20,
+        elevation_scale=20,
         get_position=["LONGITUDE", "LATITUDE"],
         get_color="color",
-        get_elevation="COUNT",
+        get_elevation="normalized_count",  # Use normalized count instead of raw count
         pickable=True
     )
 
