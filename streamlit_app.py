@@ -186,8 +186,8 @@ st.sidebar.divider()
 st.sidebar.caption(f"**Data last updated on:** {data_collected_at}.")
 
 ## TABS
-if menu_id == 'About':
-    introduction()
+#if menu_id == 'About':
+#    introduction()
     
 if menu_id == 'Locations':    
     metrics(location_count_total, review_count_total, avg_rating_total, filtered_data)
