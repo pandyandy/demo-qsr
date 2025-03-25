@@ -19,7 +19,7 @@ def write_table(table_id: str, df: pd.DataFrame, is_incremental: bool = False):
     try:
         df.to_csv(csv_path, index=False)
         
-        files = Files(st.secrets['kbc_url'], st.secrets['KEBOOLA_TOKEN'])
+        files = Files(st.secrets['kbc_url'], st.secrets['kbc_token'])
         file_id = files.upload_file(file_path=csv_path, tags=['file-import'],
                                     do_notify=False, is_public=False)
         job = kbc_client.tables.load_raw(table_id=table_id, data_file_id=file_id, is_incremental=is_incremental)
