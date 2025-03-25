@@ -2,14 +2,18 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-rating_colors_index = {'0': '#B3B3B3', '1': '#EA4335', '2': '#e98f41', '3': '#FBBC05', '4': '#a5c553', '5': '#34A853'}
+rating_colors_index = {'0.0': '#B3B3B3', '1.0': '#EA4335', '2.0': '#e98f41', '3.0': '#FBBC05', '4.0': '#a5c553', '5.0': '#34A853'}
 rating_colors = {0: '#B3B3B3', 1: '#EA4335', 2: '#e98f41', 3: '#FBBC05', 4: '#a5c553', 5: '#34A853'}
 
 @st.fragment
 def overview(data):
-    data = data[data['REVIEW_ORIGIN'] != 'Facebook']
     # Create combined identifier based on location and review source
     data['LOCATION_SOURCE'] = data['ADDRESS'] + ' - ' + data['REVIEW_ORIGIN']
+    
+    # Check if data is empty or contains only sources with no data
+    if data.empty:
+        st.warning("No data available for the selected filters. Please try different selection criteria.")
+        return
     
     # Group and aggregate data
     data_rating_sorted = (
@@ -25,6 +29,7 @@ def overview(data):
     ## RATING DISTRIBUTION FOR TOP/BOTTOM X    
 
     top_locations = data_rating_sorted
+        
     unique_sources = top_locations['REVIEW_ORIGIN'].nunique()
     
     if unique_sources <= 2:
@@ -37,16 +42,31 @@ def overview(data):
                     lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()
                 ).fillna(0)
                 source_rating_distribution.index = source_data['BRAND']
-                source_rating_distribution = source_rating_distribution.sort_index(axis=1, ascending=False).iloc[::-1]
+                
+                # Ensure all ratings (1-5) are present in each distribution
+                for rating in range(1, 6):
+                    if rating not in source_rating_distribution.columns:
+                        source_rating_distribution[rating] = 0
+                
+                source_rating_distribution = source_rating_distribution.sort_index(axis=1, ascending=False)
+                
+                # Convert to long format for plotly - use the actual column name after reset_index
+                source_rating_long = source_rating_distribution.reset_index()
+                source_rating_long = source_rating_long.melt(
+                    id_vars='BRAND',  # Use the actual column name instead of 'index'
+                    var_name='rating', 
+                    value_name='value'
+                )
                 
                 fig = px.bar(
-                    source_rating_distribution,
-                    x=source_rating_distribution.columns,
-                    y=source_rating_distribution.index,
+                    source_rating_long,
+                    x='value',
+                    y='BRAND',  # Use the actual column name here too
+                    color='rating',
                     orientation='h',
-                    labels={'value': 'Percentage', 'index': 'Brand', 'rating': 'Rating', 'variable': 'Rating'},
+                    labels={'value': 'Percentage', 'BRAND': 'Brand', 'rating': 'Rating'},
                     title=f'Rating Distribution - {source}',
-                    color_discrete_map=rating_colors_index
+                    color_discrete_map=rating_colors
                 )
                 fig.update_traces(hovertemplate='%{x:.2%}<extra></extra>')
                 fig.update_layout(
