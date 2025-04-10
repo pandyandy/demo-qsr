@@ -38,6 +38,9 @@ reviews_data = read_data(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
 bot_data = pd.read_csv(st.secrets['bot_path'])
+reviews_data = reviews_data[reviews_data['REVIEW_ORIGIN'] != 'Facebook']
+bot_data = bot_data[bot_data['REVIEW_ORIGIN'] != 'Facebook']
+
 
 options=['Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant'] #'About',
 icons=['pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot'] #'info-circle', 
