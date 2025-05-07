@@ -65,12 +65,12 @@ st.sidebar.markdown(
 )
 
 if 'brand_options' not in st.session_state:
-    st.session_state.brand_options = sorted(locations_data['BRAND'].unique().tolist())
+    st.session_state.brand_options = sorted(locations_data['CATEGORY_0'].unique().tolist())
 
-brand = st.sidebar.multiselect('Select a brand', st.session_state.brand_options, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
+brand = st.sidebar.multiselect('Select a category', st.session_state.brand_options, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
 
 if len(brand) > 0:
-    st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
+    st.session_state.filtered_locations = locations_data[locations_data['CATEGORY_0'].isin(brand)]
 else:
     st.session_state.filtered_locations = locations_data
 
@@ -91,13 +91,13 @@ data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max
 review_count_total = len(st.session_state[f'locations_reviews_merged_{brand}'])
 avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].mean(), 2)
 
-# Source Selection
-source_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_ORIGIN'].unique().tolist())
-source = st.sidebar.multiselect('Select a source', source_options, placeholder='All')
-if len(source) > 0:
-    selected_source = source
+# Brand Selection
+brand_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['BRAND'].unique().tolist())
+brand_select = st.sidebar.multiselect('Select a brand', brand_options, placeholder='All')
+if len(brand_select) > 0:
+    selected_brand = brand_select
 else:
-    selected_source = source_options
+    selected_brand = brand_options
 
 # Location Selection
 location_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['ADDRESS'].unique().tolist())
@@ -124,7 +124,7 @@ else:
     selected_rating = rating_options
 
 # Date Selection
-date_options = ['Current Year', 'Last Year', 'All Time Collected', 'Other']
+date_options = ['All Time Collected', 'Current Year', 'Last Year', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
 min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
 max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
@@ -158,7 +158,7 @@ if start_date > end_date:
 selected_date_range = (start_date, end_date)
 
 filtered_data = st.session_state[f'locations_reviews_merged_{brand}'][
-    st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_ORIGIN'].isin(selected_source)
+    st.session_state[f'locations_reviews_merged_{brand}']['BRAND'].isin(selected_brand)
 ]
 filtered_data = filtered_data[
     filtered_data['ADDRESS'].isin(selected_location)
