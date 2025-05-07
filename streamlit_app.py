@@ -84,7 +84,7 @@ if f'locations_reviews_merged_{brand}' not in st.session_state:
     )
 
 # Calculate the correct location count by counting unique PLACE_IDs
-location_count_total = st.session_state.filtered_locations['LOCATION_ID'].nunique()
+location_count_total = st.session_state.filtered_locations['PLACE_ID'].nunique()
 data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max()
 
 # Calculate review count and average rating based on selected brand
