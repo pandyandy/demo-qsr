@@ -34,7 +34,7 @@ for key, value in session_defaults.items():
         st.session_state[key] = value
 
 locations_data = pd.read_csv(st.secrets['locations_path'])
-reviews_data = read_data(st.secrets['reviews_path'])
+reviews_data = read_data(st.secrets['reviews_path'])#pd.read_csv(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
 bot_data = pd.read_csv(st.secrets['bot_path'])
@@ -82,7 +82,7 @@ if f'locations_reviews_merged_{brand}' not in st.session_state:
         how='inner'
     )
 
-if brand == 'Restarant':
+if brand == 'Restaurant':
     categories_to_filter = {
                 "Food": {
                     "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],

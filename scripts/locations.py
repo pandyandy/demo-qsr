@@ -42,7 +42,7 @@ def locations(data):
     column_layer = pdk.Layer(
         "ColumnLayer",
         data=map_data,
-        disk_resolution=12,
+        disk_resolution=10,
         radius=800,
         elevation_scale=1000,
         get_position=["LONGITUDE", "LATITUDE"],
