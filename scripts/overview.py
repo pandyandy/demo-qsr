@@ -18,13 +18,13 @@ def overview(data):
     # Group and aggregate data
     data_rating_sorted = (
         data
-        .groupby(['PLACE_ID', 'LOCATION_SOURCE', 'BRAND', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'REVIEW_ORIGIN'])
+        .groupby(['PLACE_ID', 'LOCATION_SOURCE', 'BRAND', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'REVIEW_ORIGIN', 'CITY'])
         .agg({'RATING': [lambda x: x.tolist(), 'count']})  
         .reset_index()  
         .sort_values(by=['PLACE_TOTAL_SCORE', ('RATING', 'count')], ascending=[False, False])  
     )
     
-    data_rating_sorted.columns = ['PLACE_ID', 'LOCATION_SOURCE', 'BRAND', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'REVIEW_ORIGIN', 'RATING', 'COUNT']
+    data_rating_sorted.columns = ['PLACE_ID', 'LOCATION_SOURCE', 'BRAND', 'PLACE_TOTAL_SCORE', 'PLACE_URL', 'REVIEW_ORIGIN', 'CITY', 'RATING', 'COUNT']
 
     ## RATING DISTRIBUTION FOR TOP/BOTTOM X    
 
@@ -41,7 +41,7 @@ def overview(data):
                 source_rating_distribution = source_data['RATING'].apply(
                     lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()
                 ).fillna(0)
-                source_rating_distribution.index = source_data['BRAND']
+                source_rating_distribution.index = source_data['BRAND'] + ' - ' + source_data['CITY']
                 
                 # Ensure all ratings (1-5) are present in each distribution
                 for rating in range(1, 6):
@@ -53,7 +53,7 @@ def overview(data):
                 # Convert to long format for plotly - use the actual column name after reset_index
                 source_rating_long = source_rating_distribution.reset_index()
                 source_rating_long = source_rating_long.melt(
-                    id_vars='BRAND',  # Use the actual column name instead of 'index'
+                    id_vars='index',
                     var_name='rating', 
                     value_name='value'
                 )
@@ -61,11 +61,11 @@ def overview(data):
                 fig = px.bar(
                     source_rating_long,
                     x='value',
-                    y='BRAND',  # Use the actual column name here too
+                    y='index',
                     color='rating',
                     orientation='h',
-                    labels={'value': 'Percentage', 'BRAND': 'Brand', 'rating': 'Rating'},
-                    title=f'Rating Distribution - {source}',
+                    labels={'value': 'Percentage', 'index': 'Location', 'rating': 'Rating'},
+                    title=f'Rating Distribution',
                     color_discrete_map=rating_colors
                 )
                 fig.update_traces(hovertemplate='%{x:.2%}<extra></extra>')
@@ -83,7 +83,7 @@ def overview(data):
         top_rating_distribution = top_locations['RATING'].apply(
             lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()
         ).fillna(0)
-        top_rating_distribution.index = top_locations['BRAND']
+        top_rating_distribution.index = top_locations['BRAND'] + ' - ' + top_locations['CITY']
         top_rating_distribution = top_rating_distribution.sort_index(axis=1, ascending=False).iloc[::-1]
         
         fig_top = px.bar(
@@ -91,8 +91,8 @@ def overview(data):
             x=top_rating_distribution.columns,
             y=top_rating_distribution.index,
             orientation='h',
-            labels={'value': 'Percentage', 'index': 'Brand', 'rating': 'Rating', 'variable': 'Rating'},
-            title=f'Rating Distribution by Brand and Source',
+            labels={'value': 'Percentage', 'index': 'Location', 'rating': 'Rating', 'variable': 'Rating'},
+            title=f'Rating Distribution by Location and Source',
             color_discrete_map=rating_colors_index
         )
         fig_top.update_traces(hovertemplate='%{x:.2%}<extra></extra>')
@@ -108,7 +108,7 @@ def overview(data):
 
     st.dataframe(
         data_rating_sorted,
-        column_order=('PLACE_TOTAL_SCORE', 'BRAND', 'REVIEW_ORIGIN', 'RATING', 'COUNT', 'PLACE_URL'),
+        column_order=('PLACE_TOTAL_SCORE', 'BRAND', 'CITY', 'REVIEW_ORIGIN', 'RATING', 'COUNT', 'PLACE_URL'),
         column_config={
             "PLACE_TOTAL_SCORE": st.column_config.ProgressColumn(
                 "Location Rating",
