@@ -69,7 +69,7 @@ if 'brand_options' not in st.session_state:
 brand = st.sidebar.selectbox('Select a category', st.session_state.brand_options, index=0, key='selected_brand')
 
 if len(brand) > 0:
-    st.session_state.filtered_locations = locations_data[locations_data['CATEGORY_0'].isin(brand)]
+    st.session_state.filtered_locations = locations_data[locations_data['CATEGORY_0'] == brand]
 else:
     st.session_state.filtered_locations = locations_data
 
