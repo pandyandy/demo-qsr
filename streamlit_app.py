@@ -49,9 +49,8 @@ icons=['pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot'] #'info
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
 
-# Convert ENTITY and ATTRIBUTE columns to lowercase
-attributes['ENTITY'] = attributes['ENTITY'].str.lower()
-attributes['ATTRIBUTE'] = attributes['ATTRIBUTE'].str.lower()
+# Convert ENTITY and ATTRIBUTE columns to uppercase
+sentences_data['ENTITY'] = sentences_data['ENTITY'].str.title()
 
 #attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
 pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
