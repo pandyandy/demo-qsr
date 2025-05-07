@@ -43,8 +43,8 @@ def locations(data):
         "ColumnLayer",
         data=map_data,
         disk_resolution=12,
-        radius=50,
-        elevation_scale=20,
+        radius=800,
+        elevation_scale=1000,
         get_position=["LONGITUDE", "LATITUDE"],
         get_color="color",
         get_elevation="normalized_count",  # Use normalized count instead of raw count
@@ -54,7 +54,7 @@ def locations(data):
     view_state = pdk.ViewState(
         latitude=center_lat,
         longitude=center_long,
-        zoom=12,
+        zoom=8,
         pitch=50
     )
 
