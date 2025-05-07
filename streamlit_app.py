@@ -84,27 +84,56 @@ if f'locations_reviews_merged_{brand}' not in st.session_state:
         how='inner'
     )
 
-if brand == 'Restaurant':
+if not brand:  # Empty list - show both food and product categories
     categories_to_filter = {
-                "Food": {
-                    "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
-                    "Menu": ["Comments", "Inquiries"],
-                    "Issues": ["Availability", "Food Safety"]
-                },
-                "People": {
-                    "Team": ["Presentation", "Hospitality"]
-                },
-                "Experience": {
-                    "Payment": ["Cost of Meal", "Pricing Accuracy", "Payment Processing"],
-                    "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process"],
-                    "Loyalty": ["Loyalty"],
-                    "Amenities": ["Amenities"],
-                    "Inquiries": ["Inquiries"],
-                    "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
-                }
-            }
-    restaurant_tf=True
-else: 
+        "Food": {
+            "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
+            "Menu": ["Comments", "Inquiries"], 
+            "Issues": ["Availability", "Food Safety"]
+        },
+        "Product": {
+            "Quality": ["Effectiveness", "Condition", "Reliability", "Appearance", "Features", "Safety", "Quantity"],
+            "Selection": ["Availability", "Variety", "Product Information"],
+            "Issues": ["Defects", "Expiration", "Packaging Problems"]
+        },
+        "People": {
+            "Team": ["Presentation", "Hospitality", "Professionalism", "Helpfulness", "Friendliness", "Knowledge"]
+        },
+        "Experience": {
+            "Payment": ["Cost of Meal", "Pricing", "Billing Accuracy", "Payment Processing"],
+            "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process", "Ease of Ordering", "Processing Time"],
+            "Loyalty": ["Loyalty", "Loyalty Program", "Return Incentives"],
+            "Facilities": ["Amenities", "Cleanliness", "Accessibility", "Waiting Area", "Parking"],
+            "Events": ["Weddings", "Receptions", "Private Events"],
+            "Inquiries": ["Inquiries", "Responsiveness", "Staff Communication"],
+            "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"],
+            "General Feedback": ["Overall Impression", "Unspecified"]
+        }
+    }
+    restaurant_tf = True
+
+elif 'Restaurant' in brand and len(brand) == 1:  # Only restaurant category
+    categories_to_filter = {
+        "Food": {
+            "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
+            "Menu": ["Comments", "Inquiries"],
+            "Issues": ["Availability", "Food Safety"]
+        },
+        "People": {
+            "Team": ["Presentation", "Hospitality"]
+        },
+        "Experience": {
+            "Payment": ["Cost of Meal", "Pricing Accuracy", "Payment Processing"],
+            "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process"],
+            "Loyalty": ["Loyalty"],
+            "Amenities": ["Amenities"],
+            "Inquiries": ["Inquiries"],
+            "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
+        }
+    }
+    restaurant_tf = True
+
+elif 'Restaurant' not in brand:  # Only product categories
     categories_to_filter = {
         "Product": {
             "Quality": ["Effectiveness", "Condition", "Reliability", "Appearance", "Features", "Safety", "Quantity"],
@@ -124,7 +153,35 @@ else:
             "General Feedback": ["Overall Impression", "Unspecified"]
         }
     }
-    restaurant_tf=False
+    restaurant_tf = False
+
+else:  # Restaurant and other categories
+    categories_to_filter = {
+        "Food": {
+            "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
+            "Menu": ["Comments", "Inquiries"],
+            "Issues": ["Availability", "Food Safety"]
+        },
+        "Product": {
+            "Quality": ["Effectiveness", "Condition", "Reliability", "Appearance", "Features", "Safety", "Quantity"],
+            "Selection": ["Availability", "Variety", "Product Information"],
+            "Issues": ["Defects", "Expiration", "Packaging Problems"]
+        },
+        "People": {
+            "Team": ["Presentation", "Hospitality", "Professionalism", "Helpfulness", "Friendliness", "Knowledge"]
+        },
+        "Experience": {
+            "Payment": ["Cost of Meal", "Pricing", "Billing Accuracy", "Payment Processing"],
+            "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process", "Ease of Ordering", "Processing Time"],
+            "Loyalty": ["Loyalty", "Loyalty Program", "Return Incentives"],
+            "Facilities": ["Amenities", "Cleanliness", "Accessibility", "Waiting Area", "Parking"],
+            "Events": ["Weddings", "Receptions", "Private Events"],
+            "Inquiries": ["Inquiries", "Responsiveness", "Staff Communication"],
+            "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"],
+            "General Feedback": ["Overall Impression", "Unspecified"]
+        }
+    }
+    restaurant_tf = True
 
 # Calculate the correct location count by counting unique PLACE_IDs
 #location_count_total = st.session_state.filtered_locations['PLACE_ID'].nunique()
