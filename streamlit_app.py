@@ -226,7 +226,7 @@ else:
     selected_rating = rating_options
 
 # Date Selection
-date_options = ['Current Year', 'Last Year', 'All Time Collected', 'Other']
+date_options = ['2024+', 'Current Year', 'Last Year', 'All Time Collected', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
 min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
 max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
@@ -253,6 +253,8 @@ else:
         start_date = end_date - pd.DateOffset(years=1)
     elif date_selection == 'All Time Collected':
         start_date = min_date
+    elif date_selection == '2024+':
+        start_date = pd.to_datetime('2024-01-01')
 
 if start_date > end_date:
     start_date, end_date = end_date, start_date
