@@ -68,10 +68,10 @@ if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['CATEGORY_0'].unique().tolist(), reverse=True)
 
 location_count_total = locations_data['PLACE_ID'].nunique()
-brand = st.sidebar.selectbox('Select a category', st.session_state.brand_options, index=0, key='selected_brand')
+brand = st.sidebar.multiselect('Select a category', st.session_state.brand_options, placeholder='All', key='selected_brand')
 
 if len(brand) > 0:
-    st.session_state.filtered_locations = locations_data[locations_data['CATEGORY_0'] == brand]
+    st.session_state.filtered_locations = locations_data[locations_data['CATEGORY_0'].isin(brand)]
 else:
     st.session_state.filtered_locations = locations_data
 
