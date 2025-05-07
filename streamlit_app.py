@@ -48,6 +48,8 @@ icons=['pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot'] #'info
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
+
+
 #attributes['entity'] = attributes['entity'].replace('burgers', 'burger')
 pronouns_to_remove = ['i', 'you', 'she', 'he', 'it', 'we', 'they', 'I', 'You', 'She', 'He', 'It', 'We', 'They']
 attributes = attributes[~attributes['ENTITY'].isin(pronouns_to_remove)]
@@ -224,7 +226,7 @@ else:
     selected_rating = rating_options
 
 # Date Selection
-date_options = ['All Time Collected', 'Current Year', 'Last Year', 'Other']
+date_options = ['Current Year', 'Last Year', 'All Time Collected', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
 min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
 max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
