@@ -120,7 +120,7 @@ def display_network_graph(attributes):
     col1.pyplot(fig, use_container_width=True)
 
 
-def ai_analysis(data, attributes, sentences):
+def ai_analysis(data, attributes, sentences, categories_to_filter):
     ## SENTIMENT COUNT BY DATE
     data['REVIEW_DATE'] = pd.to_datetime(data['REVIEW_DATE']).dt.date
     avg_rating_per_day = data.groupby('REVIEW_DATE')['RATING'].mean().reset_index()
@@ -200,24 +200,7 @@ def ai_analysis(data, attributes, sentences):
             st.markdown("##### Classification")
             entities_x = col1.slider("Select the number of entities", min_value=1, max_value=20, value=10)
 
-            categories = {
-                "Food": {
-                    "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
-                    "Menu": ["Comments", "Inquiries"],
-                    "Issues": ["Availability", "Food Safety"]
-                },
-                "People": {
-                    "Team": ["Presentation", "Hospitality"]
-                },
-                "Experience": {
-                    "Payment": ["Cost of Meal", "Pricing Accuracy", "Payment Processing"],
-                    "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process"],
-                    "Loyalty": ["Loyalty"],
-                    "Amenities": ["Amenities"],
-                    "Inquiries": ["Inquiries"],
-                    "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
-                }
-            }
+            categories = categories_to_filter
 
             category_options = sorted(list(categories.keys()))
             category = st.multiselect("Select categories", options=category_options, placeholder='All')

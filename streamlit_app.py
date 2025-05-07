@@ -67,7 +67,7 @@ st.sidebar.markdown(
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['CATEGORY_0'].unique().tolist())
 
-brand = st.sidebar.multiselect('Select a category', st.session_state.brand_options, placeholder='All', key='selected_brand') if st.secrets.get('all_brands', 'True') == 'True' else st.secrets['brand_filter']
+brand = st.sidebar.selectbox('Select a category', st.session_state.brand_options, index=-1, key='selected_brand')
 
 if len(brand) > 0:
     st.session_state.filtered_locations = locations_data[locations_data['CATEGORY_0'].isin(brand)]
@@ -82,6 +82,46 @@ if f'locations_reviews_merged_{brand}' not in st.session_state:
         on='PLACE_ID',
         how='inner'
     )
+
+if brand == 'Restarant':
+    categories_to_filter = {
+                "Food": {
+                    "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
+                    "Menu": ["Comments", "Inquiries"],
+                    "Issues": ["Availability", "Food Safety"]
+                },
+                "People": {
+                    "Team": ["Presentation", "Hospitality"]
+                },
+                "Experience": {
+                    "Payment": ["Cost of Meal", "Pricing Accuracy", "Payment Processing"],
+                    "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process"],
+                    "Loyalty": ["Loyalty"],
+                    "Amenities": ["Amenities"],
+                    "Inquiries": ["Inquiries"],
+                    "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
+                }
+            }
+else: 
+    categories_to_filter = {
+        "Product": {
+            "Quality": ["Effectiveness", "Condition", "Reliability", "Appearance", "Features", "Safety", "Quantity"],
+            "Selection": ["Availability", "Variety", "Product Information"],
+            "Issues": ["Defects", "Expiration", "Packaging Problems"]
+        },
+        "People": {
+            "Team": ["Professionalism", "Helpfulness", "Friendliness", "Knowledge"]
+        },
+        "Experience": {
+            "Payment": ["Pricing", "Billing Accuracy", "Payment Processing"],
+            "Ordering": ["Ease of Ordering", "Processing Time", "Order Accuracy"],
+            "Loyalty": ["Loyalty Program", "Return Incentives"],
+            "Facilities": ["Cleanliness", "Accessibility", "Waiting Area", "Parking"],
+            "Events": ["Weddings", "Receptions", "Private Events"],
+            "Inquiries": ["Responsiveness", "Staff Communication"],
+            "General Feedback": ["Overall Impression", "Unspecified"]
+        }
+    }
 
 # Calculate the correct location count by counting unique PLACE_IDs
 location_count_total = st.session_state.filtered_locations['PLACE_ID'].nunique()
@@ -202,7 +242,7 @@ if menu_id == 'Overview':
 
 if menu_id == 'AI Analysis':
     metrics(location_count_total, review_count_total, avg_rating_total, filtered_data, show_pie=True)
-    ai_analysis(filtered_data, attributes, sentences_data)
+    ai_analysis(filtered_data, attributes, sentences_data, categories_to_filter)
 
 if menu_id == 'Support':
     support(filtered_data, reviews_data)

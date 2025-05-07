@@ -39,7 +39,7 @@ def metrics(location_count_total, review_count_total, avg_rating_total, filtered
     # Metrics for filtered
     filtered_review_count = len(filtered_data)
     filtered_avg_rating = filtered_data['RATING'].mean() if filtered_review_count > 0 else 0
-    filtered_unique_locations = filtered_data['ADDRESS'].nunique()
+    filtered_unique_locations = filtered_data['PLACE_ID'].nunique()
 
     with st.container(border=True):
         col1, col2, col3 = st.columns(3)
