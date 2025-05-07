@@ -33,6 +33,7 @@ for key, value in session_defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
+
 locations_data = pd.read_csv(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])#pd.read_csv(st.secrets['reviews_path'])
 sentences_data = pd.read_csv(st.secrets['sentences_path'])
@@ -66,6 +67,7 @@ st.sidebar.markdown(
 if 'brand_options' not in st.session_state:
     st.session_state.brand_options = sorted(locations_data['CATEGORY_0'].unique().tolist(), reverse=True)
 
+location_count_total = locations_data['PLACE_ID'].nunique()
 brand = st.sidebar.selectbox('Select a category', st.session_state.brand_options, index=0, key='selected_brand')
 
 if len(brand) > 0:
@@ -125,7 +127,7 @@ else:
     restaurant_tf=False
 
 # Calculate the correct location count by counting unique PLACE_IDs
-location_count_total = st.session_state.filtered_locations['PLACE_ID'].nunique()
+#location_count_total = st.session_state.filtered_locations['PLACE_ID'].nunique()
 data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max()
 
 # Calculate review count and average rating based on selected brand
