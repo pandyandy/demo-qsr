@@ -101,6 +101,7 @@ if brand == 'Restarant':
                     "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
                 }
             }
+    restaurant_tf=True
 else: 
     categories_to_filter = {
         "Product": {
@@ -121,6 +122,7 @@ else:
             "General Feedback": ["Overall Impression", "Unspecified"]
         }
     }
+    restaurant_tf=False
 
 # Calculate the correct location count by counting unique PLACE_IDs
 location_count_total = st.session_state.filtered_locations['PLACE_ID'].nunique()
@@ -241,7 +243,7 @@ if menu_id == 'Overview':
 
 if menu_id == 'AI Analysis':
     metrics(location_count_total, review_count_total, avg_rating_total, filtered_data, show_pie=True)
-    ai_analysis(filtered_data, attributes, sentences_data, categories_to_filter)
+    ai_analysis(filtered_data, attributes, sentences_data, categories_to_filter, restaurant_tf)
 
 if menu_id == 'Support':
     support(filtered_data, reviews_data)

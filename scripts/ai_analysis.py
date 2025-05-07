@@ -120,7 +120,7 @@ def display_network_graph(attributes):
     col1.pyplot(fig, use_container_width=True)
 
 
-def ai_analysis(data, attributes, sentences, categories_to_filter):
+def ai_analysis(data, attributes, sentences, categories_to_filter, restaurant_tf):
     ## SENTIMENT COUNT BY DATE
     data['REVIEW_DATE'] = pd.to_datetime(data['REVIEW_DATE']).dt.date
     avg_rating_per_day = data.groupby('REVIEW_DATE')['RATING'].mean().reset_index()
@@ -138,33 +138,34 @@ def ai_analysis(data, attributes, sentences, categories_to_filter):
     fig_avg_rating_per_day.update_layout(xaxis_title=None, yaxis_title=None, hovermode='x')
     st.plotly_chart(fig_avg_rating_per_day, use_container_width=True)
 
-    ## AVERAGE DETAILED RATING BY DATE
-    avg_detailed_rating_by_date = (
-        data.groupby('REVIEW_DATE')[['REVIEW_DETAILED_FOOD', 'REVIEW_DETAILED_SERVICE', 'REVIEW_DETAILED_ATMOSPHERE']]
-        .mean()
-        .round(2)
-        .rename(columns={
-            'REVIEW_DETAILED_FOOD': 'Food',
-            'REVIEW_DETAILED_SERVICE': 'Service', 
-            'REVIEW_DETAILED_ATMOSPHERE': 'Atmosphere'
-        })
-    )
-    fig_avg_detailed_rating_by_date = px.line(
-        avg_detailed_rating_by_date,
-        x=avg_detailed_rating_by_date.index,
-        y=['Food', 'Service', 'Atmosphere'],
-        labels={'x': 'Date', 'value': 'Avg Score', 'variable': 'Avg Rating', 'REVIEW_DATE': 'Date'},
-        title='Average Detailed Rating by Date',
-        height=300 
-    )
+    if restaurant_tf:
+        ## AVERAGE DETAILED RATING BY DATE
+        avg_detailed_rating_by_date = (
+            data.groupby('REVIEW_DATE')[['REVIEW_DETAILED_FOOD', 'REVIEW_DETAILED_SERVICE', 'REVIEW_DETAILED_ATMOSPHERE']]
+            .mean()
+            .round(2)
+            .rename(columns={
+                'REVIEW_DETAILED_FOOD': 'Food',
+                'REVIEW_DETAILED_SERVICE': 'Service', 
+                'REVIEW_DETAILED_ATMOSPHERE': 'Atmosphere'
+            })
+        )
+        fig_avg_detailed_rating_by_date = px.line(
+            avg_detailed_rating_by_date,
+            x=avg_detailed_rating_by_date.index,
+            y=['Food', 'Service', 'Atmosphere'],
+            labels={'x': 'Date', 'value': 'Avg Score', 'variable': 'Avg Rating', 'REVIEW_DATE': 'Date'},
+            title='Average Detailed Rating by Date',
+            height=300 
+        )
 
-    blue_shades = ['#57aeff', '#0a89ff', '#bddfff']
-    for i, trace in enumerate(fig_avg_detailed_rating_by_date.data):
-        trace.line.color = blue_shades[i]
+        blue_shades = ['#57aeff', '#0a89ff', '#bddfff']
+        for i, trace in enumerate(fig_avg_detailed_rating_by_date.data):
+            trace.line.color = blue_shades[i]
 
-    fig_avg_detailed_rating_by_date.update_traces(mode='lines+markers', hovertemplate='Avg Rating: %{y:.2f}<extra></extra>')
-    fig_avg_detailed_rating_by_date.update_layout(xaxis_title=None, yaxis_title=None, hovermode='x')
-    st.plotly_chart(fig_avg_detailed_rating_by_date)
+        fig_avg_detailed_rating_by_date.update_traces(mode='lines+markers', hovertemplate='Avg Rating: %{y:.2f}<extra></extra>')
+        fig_avg_detailed_rating_by_date.update_layout(xaxis_title=None, yaxis_title=None, hovermode='x')
+        st.plotly_chart(fig_avg_detailed_rating_by_date)
     
     ## ENTITY-ATTRIBUTE RELATIONS
     st.divider()

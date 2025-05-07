@@ -178,7 +178,7 @@ def overview(data):
             color='RATING',
             labels={'COUNT': 'Count', 'RATING': 'Rating', 'REVIEW_DATE': 'Date'},
             title='Count of Ratings Per Day Across All Selected Locations',
-            color_discrete_map=rating_colors_index,
+            color_discrete_map=rating_colors,
             opacity=0.8
         )
 
