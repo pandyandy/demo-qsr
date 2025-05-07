@@ -4,7 +4,7 @@ import plotly.express as px
 
 rating_colors_index = {'0.0': '#B3B3B3', '1.0': '#EA4335', '2.0': '#e98f41', '3.0': '#FBBC05', '4.0': '#a5c553', '5.0': '#34A853'}
 rating_colors = {0: '#B3B3B3', 1: '#EA4335', 2: '#e98f41', 3: '#FBBC05', 4: '#a5c553', 5: '#34A853'}
-
+rating_colors_str = {'0': '#B3B3B3', '1': '#EA4335', '2': '#e98f41', '3': '#FBBC05', '4': '#a5c553', '5': '#34A853'}
 @st.fragment
 def overview(data):
     # Create combined identifier based on location and review source
@@ -178,7 +178,7 @@ def overview(data):
             color='RATING',
             labels={'COUNT': 'Count', 'RATING': 'Rating', 'REVIEW_DATE': 'Date'},
             title='Count of Ratings Per Day Across All Selected Locations',
-            color_discrete_map=rating_colors,
+            color_discrete_map=rating_colors_str,
             opacity=0.8
         )
 
