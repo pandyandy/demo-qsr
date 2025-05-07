@@ -41,7 +41,7 @@ def overview(data):
                 source_rating_distribution = source_data['RATING'].apply(
                     lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()
                 ).fillna(0)
-                source_rating_distribution.index = source_data['BRAND'] + ' - ' + source_data['CITY']
+                source_rating_distribution.index = source_data['BRAND'] + ', ' + source_data['CITY']
                 
                 # Ensure all ratings (1-5) are present in each distribution
                 for rating in range(1, 6):
@@ -83,7 +83,7 @@ def overview(data):
         top_rating_distribution = top_locations['RATING'].apply(
             lambda ratings: pd.Series(ratings).value_counts(normalize=True).sort_index()
         ).fillna(0)
-        top_rating_distribution.index = top_locations['BRAND'] + ' - ' + top_locations['CITY']
+        top_rating_distribution.index = top_locations['BRAND'] + ', ' + top_locations['CITY']
         top_rating_distribution = top_rating_distribution.sort_index(axis=1, ascending=False).iloc[::-1]
         
         fig_top = px.bar(
