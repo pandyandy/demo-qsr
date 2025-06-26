@@ -1,4 +1,4 @@
-# QSR Analytics Dashboard
+# QSR Online Reviews Analytics Dashboard
 
 A comprehensive, interactive analytics dashboard for Quick Service Restaurant (QSR) managers, built with Streamlit and powered by Keboola data pipeline. This self-service analytics tool provides insights into customer reviews, sentiment analysis, location performance, and predictive alerts.
 
@@ -7,9 +7,7 @@ A comprehensive, interactive analytics dashboard for Quick Service Restaurant (Q
 - **Overview Dashboard**: Key metrics, star rating distribution, and review volume trends
 - **NLP Insights**: Interactive word clouds, entity-attribute relationships, and sentiment analysis
 - **Benchmarking**: Location performance comparison and competitive analysis
-- **Review Classification**: AI-powered review categorization and insights
 - **Predictive Alerts**: Early warning system for negative sentiment trends
-- **AI Assistant**: Interactive chatbot for data exploration and insights
 
 ## 🏗️ Architecture
 
@@ -25,7 +23,6 @@ src/
 │   ├── nlp_insights.py # NLP analysis visualizations
 │   ├── benchmarking.py # Location comparison tools
 │   ├── predictive.py   # Predictive analytics
-│   └── review_classification.py # Review categorization
 └── requirements.txt    # Python dependencies
 ```
 
@@ -36,12 +33,7 @@ The dashboard expects the following tables from your Keboola project:
 ### Core Tables
 - **`out.c-MART.DM_REVIEW_LEVEL`** (`reviews`): Review-level data with sentiment analysis
 - **`out.c-MART.DM_KEYWORD_LEVEL`** (`keywords`): Keyword frequency and analysis
-- **`out.c-MART.DM_ENTITY_LEVEL`** (`entities`): Named entity recognition results
-
-### Additional Tables (if available)
-- **Locations data**: Restaurant location information
-- **Sentences data**: Sentence-level NLP analysis
-- **Attributes data**: Entity-attribute relationships
+- **`out.c-MART.DM_ENTITY_LEVEL`** (`entities`): Entity-attribute relationship results
 
 ## 🚀 Quick Start
 
@@ -154,45 +146,6 @@ Expected columns:
 - **Early Warning System**: Identification of locations with negative sentiment trends
 - **Alert Thresholds**: Configurable alert parameters
 
-### Review Classification Tab
-- **AI-Powered Categorization**: Automatic review classification
-- **Category Insights**: Analysis by review category
-- **Trend Monitoring**: Category performance over time
-
-## 🛠️ Development
-
-### Project Structure
-```
-demo-qsr/
-├── app.py                    # Main application entry point
-├── data.py                   # Data access layer
-├── utils.py                  # Utility functions
-├── scripts/                  # Dashboard modules
-│   ├── overview.py
-│   ├── nlp_insights.py
-│   ├── benchmarking.py
-│   ├── predictive.py
-│   └── review_classification.py
-├── requirements.txt          # Python dependencies
-├── .streamlit/
-│   └── secrets.toml.templ   # Configuration template
-└── README.md                # This file
-```
-
-### Key Dependencies
-- **Streamlit**: Web application framework
-- **Pandas**: Data manipulation and analysis
-- **Plotly**: Interactive visualizations
-- **Keboola Streamlit**: Keboola integration
-- **NetworkX**: Network graph visualizations
-- **Matplotlib**: Additional plotting capabilities
-
-### Caching Strategy
-The application uses Streamlit's caching decorators to optimize performance:
-- Data loading is cached to minimize redundant API calls
-- Computed metrics are cached for faster dashboard rendering
-- Filtered datasets are cached based on user selections
-
 ## 🚀 Deployment
 
 ### Local Development
@@ -215,9 +168,9 @@ Ensure all required environment variables are set in your deployment environment
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
 5. Open a Pull Request
 
 ## 📝 License
