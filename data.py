@@ -5,11 +5,11 @@ import os
 from kbcstorage.client import Client, Files
 from keboola_streamlit import KeboolaStreamlit
 
-kbc_client = Client(st.secrets['kbc_url'], st.secrets['KEBOOLA_TOKEN'])
+kbc_client = Client(st.secrets['kbc_url'], st.secrets['kbc_token'])
 
 @st.cache_data(show_spinner='Loading data...🍟🥤🍔')
 def read_data(table_name):
-    keboola = KeboolaStreamlit(st.secrets['kbc_url'], st.secrets['KEBOOLA_TOKEN'])
+    keboola = KeboolaStreamlit(st.secrets['kbc_url'], st.secrets['kbc_token'])
     df = keboola.read_table(table_name)
     return df
 

@@ -1,10 +1,7 @@
-streamlit
-openai
-streamlit-option-menu
-pandas
-plotly
-kbcstorage
-keboola-streamlit
-networkx
-matplotlib
-streamlit-extras
+streamlit==1.46.0
+streamlit-option-menu==0.4.0
+pandas==2.3.0
+plotly==6.1.2
+keboola-streamlit==0.1.1
+networkx==3.5
+matplotlib==3.10.3

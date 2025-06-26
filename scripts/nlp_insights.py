@@ -5,7 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.express as px
 
-from scripts.viz import sentiment_color
+from utils import sentiment_color
 
 def create_network_graph(attributes, slider_entities):
     # Get top entities by total attribute counts

@@ -4,17 +4,14 @@ import pandas as pd
 
 from streamlit_option_menu import option_menu
 
-from scripts.about import introduction
-from scripts.locations import locations
+from scripts.benchmarking import locations
 from scripts.overview import overview
-from scripts.ai_analysis import ai_analysis
-from scripts.support import support
-from scripts.openai import assistant
+from scripts.nlp_insights import ai_analysis
+from scripts.review_classification import review_classification_dashboard
 
-from scripts.sapi import read_data
-from scripts.viz import metrics
+from data import read_data
+from utils import metrics
 
-from streamlit_extras.let_it_rain import rain
 
 st.set_page_config(layout="wide")
 
@@ -35,24 +32,14 @@ for key, value in session_defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-def example():
-    rain(
-        emoji="🎁",
-        font_size=44,
-        falling_speed=5,
-        animation_length="3 seconds",
-    )
 
-example()
-
-locations_data = pd.read_csv(st.secrets['locations_path'])
+locations_data = read_data(st.secrets['locations_path'])
 reviews_data = read_data(st.secrets['reviews_path'])
-sentences_data = pd.read_csv(st.secrets['sentences_path'])
-attributes = pd.read_csv(st.secrets['attributes_path'])
-bot_data = pd.read_csv(st.secrets['bot_path'])
+sentences_data = read_data(st.secrets['sentences_path'])
+attributes = read_data(st.secrets['attributes_path'])
 
-options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
-icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
+options = ['About', 'Benchmarking', 'Overview', 'NLP Insights', 'Review Classification', 'Predictive Alerts', 'Assistant']
+icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'exclamation-triangle', 'robot']
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
@@ -209,9 +196,17 @@ if menu_id == 'Overview':
     metrics(location_count_total, review_count_total, avg_rating_total, filtered_data)
     overview(filtered_data)
 
-if menu_id == 'AI Analysis':
+if menu_id == 'NLP Insights':
     metrics(location_count_total, review_count_total, avg_rating_total, filtered_data, show_pie=True)
     ai_analysis(filtered_data, attributes, sentences_data)
+
+if menu_id == 'Review Classification':
+    metrics(location_count_total, review_count_total, avg_rating_total, filtered_data)
+    review_classification_dashboard(filtered_data, sentences_data)
+
+if menu_id == 'Predictive Alerts':
+    metrics(location_count_total, review_count_total, avg_rating_total, filtered_data)
+    predictive_alerts(filtered_data)
 
 if menu_id == 'Support':
     support(filtered_data, reviews_data)
