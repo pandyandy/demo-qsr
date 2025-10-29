@@ -73,6 +73,7 @@ else:
 
 #st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
 
+st.write(st.session_state.filtered_locations)
 # Merge locations and reviews data for the specific brand and save to session state
 if f'locations_reviews_merged_{brand}' not in st.session_state:
     st.session_state[f'locations_reviews_merged_{brand}'] = pd.merge(
@@ -81,7 +82,7 @@ if f'locations_reviews_merged_{brand}' not in st.session_state:
         on='PLACE_ID',
         how='inner'
     )
-
+st.write(st.session_state[f'locations_reviews_merged_{brand}'])
 location_count_total = len(st.session_state.filtered_locations)
 data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max()
 
@@ -117,8 +118,6 @@ else:
 
 # Sentiment Selection
 sentiment_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['OVERALL_SENTIMENT'].unique().tolist())
-st.write(st.session_state[f'locations_reviews_merged_{brand}'])
-st.write(sentiment_options)
 sentiment = st.sidebar.multiselect('Select a sentiment', sentiment_options, placeholder='All')
 if len(sentiment) > 0:
     selected_sentiment = sentiment
