@@ -139,24 +139,24 @@ def ai_analysis(data, attributes, sentences):
     st.plotly_chart(fig_avg_rating_per_day, use_container_width=True)
 
     ## AVERAGE DETAILED RATING BY DATE
-    avg_detailed_rating_by_date = (
-        data.groupby('REVIEW_DATE')[['REVIEW_DETAILED_FOOD', 'REVIEW_DETAILED_SERVICE', 'REVIEW_DETAILED_ATMOSPHERE']]
-        .mean()
-        .round(2)
-        .rename(columns={
-            'REVIEW_DETAILED_FOOD': 'Food',
-            'REVIEW_DETAILED_SERVICE': 'Service', 
-            'REVIEW_DETAILED_ATMOSPHERE': 'Atmosphere'
-        })
-    )
-    fig_avg_detailed_rating_by_date = px.line(
-        avg_detailed_rating_by_date,
-        x=avg_detailed_rating_by_date.index,
-        y=['Food', 'Service', 'Atmosphere'],
-        labels={'x': 'Date', 'value': 'Avg Score', 'variable': 'Avg Rating', 'REVIEW_DATE': 'Date'},
-        title='Average Detailed Rating by Date',
-        height=300 
-    )
+ #   avg_detailed_rating_by_date = (
+  #      data.groupby('REVIEW_DATE')[['REVIEW_DETAILED_FOOD', 'REVIEW_DETAILED_SERVICE', 'REVIEW_DETAILED_ATMOSPHERE']]
+   #     .mean()
+   #     .round(2)
+    #    .rename(columns={
+     #       'REVIEW_DETAILED_FOOD': 'Food',
+      #      'REVIEW_DETAILED_SERVICE': 'Service', 
+       #     'REVIEW_DETAILED_ATMOSPHERE': 'Atmosphere'
+        #})
+    #)
+    #fig_avg_detailed_rating_by_date = px.line(
+     #   avg_detailed_rating_by_date,
+      #  x=avg_detailed_rating_by_date.index,
+       # y=['Food', 'Service', 'Atmosphere'],
+     #   labels={'x': 'Date', 'value': 'Avg Score', 'variable': 'Avg Rating', 'REVIEW_DATE': 'Date'},
+      #  title='Average Detailed Rating by Date',
+       # height=300 
+    #)
 
     blue_shades = ['#57aeff', '#0a89ff', '#bddfff']
     for i, trace in enumerate(fig_avg_detailed_rating_by_date.data):
