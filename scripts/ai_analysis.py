@@ -158,13 +158,13 @@ def ai_analysis(data, attributes, sentences):
        # height=300 
     #)
 
-    blue_shades = ['#57aeff', '#0a89ff', '#bddfff']
-    for i, trace in enumerate(fig_avg_detailed_rating_by_date.data):
-        trace.line.color = blue_shades[i]
+   # blue_shades = ['#57aeff', '#0a89ff', '#bddfff']
+   # for i, trace in enumerate(fig_avg_detailed_rating_by_date.data):
+    #    trace.line.color = blue_shades[i]
 
-    fig_avg_detailed_rating_by_date.update_traces(mode='lines+markers', hovertemplate='Avg Rating: %{y:.2f}<extra></extra>')
-    fig_avg_detailed_rating_by_date.update_layout(xaxis_title=None, yaxis_title=None, hovermode='x')
-    st.plotly_chart(fig_avg_detailed_rating_by_date)
+   # fig_avg_detailed_rating_by_date.update_traces(mode='lines+markers', hovertemplate='Avg Rating: %{y:.2f}<extra></extra>')
+   # fig_avg_detailed_rating_by_date.update_layout(xaxis_title=None, yaxis_title=None, hovermode='x')
+   # st.plotly_chart(fig_avg_detailed_rating_by_date)
     
     ## ENTITY-ATTRIBUTE RELATIONS
     st.divider()
