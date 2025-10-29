@@ -90,7 +90,7 @@ review_count_total = len(st.session_state[f'locations_reviews_merged_{brand}'])
 avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].mean(), 2)
 
 # State Selection
-state_options = sorted(st.session_state.filtered_locations['STATE'].unique().tolist())
+state_options = sorted(st.session_state.filtered_locations['STATE'].dropna().unique().tolist())
 state = st.sidebar.multiselect('Select a state', state_options, placeholder='All')
 if len(state) > 0:
     selected_state = state
@@ -99,14 +99,14 @@ else:
 
 # City Selection
 #city_options = sorted(locations_reviews_merged['CITY'].unique().tolist())
-city_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['CITY'].unique().tolist())
+city_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['CITY'].dropna().unique().tolist())
 city = st.sidebar.multiselect('Select a city', city_options, placeholder='All')
 if len(city) > 0:
     selected_city = city
-    location_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['CITY'].isin(selected_city)]['ADDRESS'].unique().tolist())
+    location_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['CITY'].isin(selected_city)]['ADDRESS'].dropna().unique().tolist())
 else:
     selected_city = city_options
-    location_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['ADDRESS'].unique().tolist())
+    location_options = sorted(st.session_state.filtered_locations[st.session_state.filtered_locations['STATE'].isin(selected_state)]['ADDRESS'].dropna().unique().tolist())
 
 # Location Selection
 location = st.sidebar.multiselect('Select a location', location_options, placeholder='All')
