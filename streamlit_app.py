@@ -117,6 +117,8 @@ else:
 
 # Sentiment Selection
 sentiment_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['OVERALL_SENTIMENT'].unique().tolist())
+st.write(st.session_state[f'locations_reviews_merged_{brand}'])
+st.write(sentiment_options)
 sentiment = st.sidebar.multiselect('Select a sentiment', sentiment_options, placeholder='All')
 if len(sentiment) > 0:
     selected_sentiment = sentiment
