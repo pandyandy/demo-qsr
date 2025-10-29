@@ -73,7 +73,6 @@ else:
 
 #st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
 
-st.write(st.session_state.filtered_locations)
 # Merge locations and reviews data for the specific brand and save to session state
 if f'locations_reviews_merged_{brand}' not in st.session_state:
     st.session_state[f'locations_reviews_merged_{brand}'] = pd.merge(
