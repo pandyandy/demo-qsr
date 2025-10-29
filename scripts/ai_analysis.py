@@ -201,21 +201,21 @@ def ai_analysis(data, attributes, sentences):
             entities_x = col1.slider("Select the number of entities", min_value=1, max_value=20, value=10)
 
             categories = {
-                "Food": {
-                    "Quality": ["Taste", "Freshness", "Temperature", "Texture", "Appearance/Presentation", "Healthfulness", "Portion"],
-                    "Menu": ["Comments", "Inquiries"],
-                    "Issues": ["Availability", "Food Safety"]
+                "Service": {
+                    "Quality": ["Timeliness", "Efficiency", "Completeness", "Carefulness", "Equipment Condition"],
+                    "Availability": ["Scheduling", "Availability"],
+                    "Issues": ["Damage", "Service Failure", "Responsiveness"]
                 },
                 "People": {
-                    "Team": ["Presentation", "Hospitality"]
+                    "Team": ["Professionalism", "Courtesy", "Expertise"],
+                    "Support": ["Customer Service", "Problem Resolution"]
                 },
                 "Experience": {
-                    "Payment": ["Cost of Meal", "Pricing Accuracy", "Payment Processing"],
-                    "Ordering": ["Speed of Service", "Order Accuracy", "Ordering Process"],
-                    "Loyalty": ["Loyalty"],
-                    "Amenities": ["Amenities"],
-                    "Inquiries": ["Inquiries"],
-                    "Cleanliness": ["Dining Room", "Kitchen", "Bathrooms", "Patio", "Drive-in", "Garbage"]
+                    "Pricing": ["Cost Transparency", "Value for Money", "Payment Process"],
+                    "Ordering / Booking": ["Ease of Booking", "Confirmation Process", "Accuracy"],
+                    "Amenities / Equipment": ["Container Quality", "Accessibility"],
+                    "Communication": ["Communication"],
+                    "Cleanliness / Aftermath": ["Site Condition", "Waste Handling"]
                 }
             }
 
