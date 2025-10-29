@@ -74,28 +74,20 @@ else:
 #st.session_state.filtered_locations = locations_data[locations_data['BRAND'].isin(brand)]
 
 st.write(st.session_state.filtered_locations)
-# Create a consistent key for session state based on selected brands
-brand_key = '_'.join(sorted(brand)) if len(brand) > 0 else 'all_brands'
-
 # Merge locations and reviews data for the specific brand and save to session state
-if f'locations_reviews_merged_{brand_key}' not in st.session_state:
-    # Filter reviews data to only include reviews for the filtered locations
-    filtered_place_ids = st.session_state.filtered_locations['PLACE_ID'].unique()
-    filtered_reviews = reviews_data[reviews_data['PLACE_ID'].isin(filtered_place_ids)]
-    
-    st.session_state[f'locations_reviews_merged_{brand_key}'] = pd.merge(
+if f'locations_reviews_merged_{brand}' not in st.session_state:
+    st.session_state[f'locations_reviews_merged_{brand}'] = pd.merge(
         st.session_state.filtered_locations,
-        filtered_reviews,
+        reviews_data,
         on='PLACE_ID',
         how='inner'
     )
-st.write(st.session_state[f'locations_reviews_merged_{brand_key}'])
 location_count_total = len(st.session_state.filtered_locations)
 data_collected_at = st.session_state.filtered_locations['DATA_COLLECTED_AT'].max()
 
 # Calculate review count and average rating based on selected brand
-review_count_total = len(st.session_state[f'locations_reviews_merged_{brand_key}'])
-avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand_key}']['RATING'].mean(), 2)
+review_count_total = len(st.session_state[f'locations_reviews_merged_{brand}'])
+avg_rating_total = round(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].mean(), 2)
 
 # State Selection
 state_options = sorted(st.session_state.filtered_locations['STATE'].dropna().unique().tolist())
@@ -124,7 +116,7 @@ else:
     selected_location = location_options
 
 # Sentiment Selection
-sentiment_options = sorted(st.session_state[f'locations_reviews_merged_{brand_key}']['OVERALL_SENTIMENT'].unique().tolist())
+sentiment_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['OVERALL_SENTIMENT'].unique().tolist())
 sentiment = st.sidebar.multiselect('Select a sentiment', sentiment_options, placeholder='All')
 if len(sentiment) > 0:
     selected_sentiment = sentiment
@@ -132,7 +124,7 @@ else:
     selected_sentiment = sentiment_options
 
 # Rating Selection
-rating_options = sorted(st.session_state[f'locations_reviews_merged_{brand_key}']['RATING'].unique().tolist())
+rating_options = sorted(st.session_state[f'locations_reviews_merged_{brand}']['RATING'].unique().tolist())
 rating = st.sidebar.multiselect('Select a review rating', rating_options, placeholder='All')
 if len(rating) > 0:
     selected_rating = rating
@@ -142,8 +134,8 @@ else:
 # Date Selection
 date_options = ['All Time Collected', 'Last Week', 'Last Month', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
-min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand_key}']['REVIEW_DATE'].dropna().min())
-max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand_key}']['REVIEW_DATE'].dropna().max())
+min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].dropna().min())
+max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].dropna().max())
 
 if date_selection == 'Other':
     if min_date == max_date:  # Check if min and max dates are the same
@@ -173,8 +165,8 @@ if start_date > end_date:
 
 selected_date_range = (start_date, end_date)
 
-filtered_data = st.session_state[f'locations_reviews_merged_{brand_key}'][
-    st.session_state[f'locations_reviews_merged_{brand_key}']['STATE'].isin(selected_state)
+filtered_data = st.session_state[f'locations_reviews_merged_{brand}'][
+    st.session_state[f'locations_reviews_merged_{brand}']['STATE'].isin(selected_state)
 ]
 filtered_data = filtered_data[
     filtered_data['CITY'].isin(selected_city)
