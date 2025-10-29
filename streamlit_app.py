@@ -134,8 +134,8 @@ else:
 # Date Selection
 date_options = ['All Time Collected', 'Last Week', 'Last Month', 'Other']
 date_selection = st.sidebar.selectbox('Select a date', date_options, index=0, placeholder='All')
-min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].min())
-max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].max())
+min_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].dropna().min())
+max_date = pd.to_datetime(st.session_state[f'locations_reviews_merged_{brand}']['REVIEW_DATE'].dropna().max())
 
 if date_selection == 'Other':
     if min_date == max_date:  # Check if min and max dates are the same
@@ -182,7 +182,8 @@ filtered_data = filtered_data[
 ]
 
 filtered_data = filtered_data[
-    filtered_data['REVIEW_DATE'].between(selected_date_range[0].strftime('%Y-%m-%d %H:%M'), selected_date_range[1].strftime('%Y-%m-%d %H:%M'))
+    filtered_data['REVIEW_DATE'].notna() & 
+    filtered_data['REVIEW_DATE'].between(selected_date_range[0], selected_date_range[1])
 ]   
 
 # Order by REVIEW_DATE
