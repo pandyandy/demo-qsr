@@ -39,8 +39,13 @@ sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
 bot_data = pd.read_csv(st.secrets['bot_path'])
 
-options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support', 'Assistant']
-icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart', 'robot']
+options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support']
+icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart']
+
+# Add Assistant tab by default unless disabled by secret
+if st.secrets.get('disable_assistant', 'False').lower() != 'true':
+    options.append('Assistant')
+    icons.append('robot')
 
 menu_id = option_menu(None, options=options, icons=icons, key='menu_id', orientation="horizontal")
 
@@ -215,5 +220,5 @@ if menu_id == 'AI Analysis':
 if menu_id == 'Support':
     support(filtered_data, reviews_data)
 
-if menu_id == 'Assistant':
+if menu_id == 'Assistant' and st.secrets.get('disable_assistant', 'False').lower() != 'true':
     assistant(file_id=st.secrets['FILE_ID'], assistant_id=st.secrets['ASSISTANT_ID'], bot_data=bot_data)
