@@ -35,20 +35,30 @@ def locations(data):
     center_long = state_coords['LONGITUDE']
 
     map_data['color'] = map_data['RATING'].apply(get_color)
-    # Scale radius based on review count for visual distinction
-    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 100, 300), 800))
+    # Scale icon size based on review count for visual distinction
+    map_data['icon_size'] = map_data['COUNT'].apply(lambda x: min(max(x * 20, 40), 100))
     
-    scatterplot_layer = pdk.Layer(
-        "ScatterplotLayer",
+    # Define icon data - using flag emoji or pin icon
+    ICON_URL = "https://img.icons8.com/emoji/48/000000/triangular-flag-on-post.png"
+    
+    icon_data = {
+        "url": ICON_URL,
+        "width": 48,
+        "height": 48,
+        "anchorY": 48,  # Anchor at bottom of icon like a pin
+    }
+    
+    map_data['icon_data'] = [icon_data for _ in range(len(map_data))]
+    
+    icon_layer = pdk.Layer(
+        "IconLayer",
         data=map_data,
         get_position=["LONGITUDE", "LATITUDE"],
-        get_color="color",
-        get_radius="radius",
+        get_icon="icon_data",
+        get_size="icon_size",
+        size_scale=1,
         pickable=True,
-        stroked=True,
-        filled=True,
-        get_line_color=[255, 255, 255, 200],
-        get_line_width=3
+        get_color="color"
     )
 
     view_state = pdk.ViewState(
@@ -61,7 +71,7 @@ def locations(data):
     deck = pdk.Deck(
         initial_view_state=view_state,
         map_style=None,
-        layers=[scatterplot_layer],
+        layers=[icon_layer],
         tooltip={
             "text": "Brand: {BRAND}\nLocation: {ADDRESS}\nLocation Rating: {PLACE_TOTAL_SCORE}\nCollected Reviews: {COUNT}\nAvg Review Rating: {RATING}",
             "style": {
@@ -72,4 +82,4 @@ def locations(data):
         }
     )
     st.pydeck_chart(deck, use_container_width=True, height=700)
-    st.caption("_The size of the marker represents the number of collected reviews, the color represents the average rating._")
+    st.caption("_The size of the flag represents the number of collected reviews, the color represents the average rating._")
