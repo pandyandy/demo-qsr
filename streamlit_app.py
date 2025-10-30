@@ -39,8 +39,13 @@ sentences_data = pd.read_csv(st.secrets['sentences_path'])
 attributes = pd.read_csv(st.secrets['attributes_path'])
 bot_data = pd.read_csv(st.secrets['bot_path'])
 
-options = ['About', 'Locations', 'Overview', 'AI Analysis', 'Support']
-icons=['info-circle', 'pin-map-fill', 'people', 'file-bar-graph', 'chat-heart']
+options = ['Locations', 'Overview', 'AI Analysis', 'Support']
+icons=['pin-map-fill', 'people', 'file-bar-graph', 'chat-heart']
+
+# Add About tab by default unless disabled by secret
+if st.secrets.get('disable_about', 'False').lower() != 'true':
+    options.insert(0, 'About')
+    icons.insert(0, 'info-circle')
 
 # Add Assistant tab by default unless disabled by secret
 if st.secrets.get('disable_assistant', 'False').lower() != 'true':
@@ -202,7 +207,7 @@ st.sidebar.divider()
 st.sidebar.caption(f"**Data last updated on:** {data_collected_at}.")
 
 ## TABS
-if menu_id == 'About':
+if menu_id == 'About' and st.secrets.get('disable_about', 'False').lower() != 'true':
     introduction()
     
 if menu_id == 'Locations':    
