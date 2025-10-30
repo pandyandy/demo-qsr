@@ -36,7 +36,7 @@ def locations(data):
 
     map_data['color'] = map_data['RATING'].apply(get_color)
     # Scale radius based on review count for visual distinction
-    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 50, 100), 500))
+    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 100, 300), 800))
     
     scatterplot_layer = pdk.Layer(
         "ScatterplotLayer",
