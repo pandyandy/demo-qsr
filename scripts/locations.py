@@ -35,8 +35,8 @@ def locations(data):
     center_long = state_coords['LONGITUDE']
 
     map_data['color'] = map_data['RATING'].apply(get_color)
-    # Scale radius based on review count for visual distinction - larger for better visibility when zoomed out
-    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 80, 500), 1000))
+    # Scale radius based on review count for visual distinction - much larger for better visibility when zoomed out
+    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 150, 1200), 2500))
     
     scatterplot_layer = pdk.Layer(
         "ScatterplotLayer",
