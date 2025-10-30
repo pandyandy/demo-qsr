@@ -51,8 +51,12 @@ def locations(data):
                 <span style="font-size: {size//2}px;">📍</span>
             </div>
         '''
+        # URL encode the HTML
+        encoded_html = html.replace('#', '%23').replace('<', '%3C').replace('>', '%3E').replace(' ', '%20').replace('"', '%22').replace("'", '%27')
+        data_url = f"data:image/svg+xml;charset=utf-8,{encoded_html}"
+        
         return {
-            "url": f"data:image/svg+xml;charset=utf-8,{html.replace('#', '%23').replace('<', '%3C').replace('>', '%3E').replace(' ', '%20').replace('"', '%22').replace("'", '%27')}",
+            "url": data_url,
             "width": size,
             "height": size,
             "anchorY": size,
