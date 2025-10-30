@@ -34,42 +34,17 @@ def locations(data):
     center_lat = state_coords['LATITUDE']
     center_long = state_coords['LONGITUDE']
 
-    # Convert color arrays to hex for HTML
-    def color_to_hex(color_array):
-        return f"#{color_array[0]:02x}{color_array[1]:02x}{color_array[2]:02x}"
+    map_data['color'] = map_data['RATING'].apply(get_color)
     
-    map_data['hex_color'] = map_data['RATING'].apply(lambda x: color_to_hex(get_color(x)))
-    # Scale icon size based on review count for visual distinction
-    map_data['icon_size'] = map_data['COUNT'].apply(lambda x: min(max(x * 5, 25), 50))
-    
-    # Create HTML-based icons with colored backgrounds
-    def create_icon_data(row):
-        size = int(row['icon_size'])
-        color = row['hex_color']
-        html = f'''
-            <div style="color: white; background-color: {color}; width: {size}px; height: {size}px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                <span style="font-size: {size//2}px;">📍</span>
-            </div>
-        '''
-        # URL encode the HTML
-        encoded_html = html.replace('#', '%23').replace('<', '%3C').replace('>', '%3E').replace(' ', '%20').replace('"', '%22').replace("'", '%27')
-        data_url = f"data:image/svg+xml;charset=utf-8,{encoded_html}"
-        
-        return {
-            "url": data_url,
-            "width": size,
-            "height": size,
-            "anchorY": size,
-        }
-    
-    map_data['icon_data'] = map_data.apply(create_icon_data, axis=1)
-    
-    icon_layer = pdk.Layer(
-        "IconLayer",
+    column_layer = pdk.Layer(
+        "ColumnLayer",
         data=map_data,
+        disk_resolution=12,
+        radius=500,
+        elevation_scale=50,  # Much lower elevation scale for reasonable heights
         get_position=["LONGITUDE", "LATITUDE"],
-        get_icon="icon_data",
-        size_scale=1,
+        get_color="color",
+        get_elevation="COUNT",
         pickable=True
     )
 
@@ -77,13 +52,13 @@ def locations(data):
         latitude=center_lat,
         longitude=center_long,
         zoom=8,
-        pitch=0
+        pitch=45
     )
 
     deck = pdk.Deck(
         initial_view_state=view_state,
         map_style=None,
-        layers=[icon_layer],
+        layers=[column_layer],
         tooltip={
             "text": "Brand: {BRAND}\nLocation: {ADDRESS}\nLocation Rating: {PLACE_TOTAL_SCORE}\nCollected Reviews: {COUNT}\nAvg Review Rating: {RATING}",
             "style": {
@@ -94,4 +69,4 @@ def locations(data):
         }
     )
     st.pydeck_chart(deck, use_container_width=True, height=700)
-    st.caption("_The size of the pin represents the number of collected reviews, the color represents the average rating._")
+    st.caption("_The height of the column represents the number of collected reviews, the color represents the average rating._")
