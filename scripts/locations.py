@@ -31,12 +31,13 @@ def locations(data):
         'LONGITUDE': 'mean'
     })
 
-    center_lat = state_coords['LATITUDE']
-    center_long = state_coords['LONGITUDE']
+    # Set center to Canada's geographic center for country-wide view
+    center_lat = 56.1304  # Canada's approximate center latitude
+    center_long = -106.3468  # Canada's approximate center longitude
 
     map_data['color'] = map_data['RATING'].apply(get_color)
-    # Use fixed large radius values that scale with zoom
-    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 2, 8), 20))
+    # Scale radius based on review count for visual distinction - smaller dots for Canada-wide view
+    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 30, 200), 400))
     
     scatterplot_layer = pdk.Layer(
         "ScatterplotLayer",
@@ -44,9 +45,6 @@ def locations(data):
         get_position=["LONGITUDE", "LATITUDE"],
         get_color="color",
         get_radius="radius",
-        radius_scale=1000,  # Large scale factor for visibility at all zoom levels
-        radius_min_pixels=15,  # Minimum size in pixels regardless of zoom
-        radius_max_pixels=100,  # Maximum size in pixels
         pickable=True,
         stroked=True,
         filled=True,
@@ -57,7 +55,7 @@ def locations(data):
     view_state = pdk.ViewState(
         latitude=center_lat,
         longitude=center_long,
-        zoom=8,
+        zoom=3.5,  # Zoomed out to show all of Canada
         pitch=0
     )
 
