@@ -34,31 +34,39 @@ def locations(data):
     center_lat = state_coords['LATITUDE']
     center_long = state_coords['LONGITUDE']
 
-    map_data['color'] = map_data['RATING'].apply(get_color)
+    # Convert color arrays to hex for HTML
+    def color_to_hex(color_array):
+        return f"#{color_array[0]:02x}{color_array[1]:02x}{color_array[2]:02x}"
+    
+    map_data['hex_color'] = map_data['RATING'].apply(lambda x: color_to_hex(get_color(x)))
     # Scale icon size based on review count for visual distinction
-    map_data['icon_size'] = map_data['COUNT'].apply(lambda x: min(max(x * 20, 40), 100))
+    map_data['icon_size'] = map_data['COUNT'].apply(lambda x: min(max(x * 5, 25), 50))
     
-    # Define icon data - using pin emoji 📍
-    ICON_URL = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='50'%3E📍%3C/text%3E%3C/svg%3E"
+    # Create HTML-based icons with colored backgrounds
+    def create_icon_data(row):
+        size = int(row['icon_size'])
+        color = row['hex_color']
+        html = f'''
+            <div style="color: white; background-color: {color}; width: {size}px; height: {size}px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                <span style="font-size: {size//2}px;">📍</span>
+            </div>
+        '''
+        return {
+            "url": f"data:image/svg+xml;charset=utf-8,{html.replace('#', '%23').replace('<', '%3C').replace('>', '%3E').replace(' ', '%20').replace('"', '%22').replace("'", '%27')}",
+            "width": size,
+            "height": size,
+            "anchorY": size,
+        }
     
-    icon_data = {
-        "url": ICON_URL,
-        "width": 64,
-        "height": 64,
-        "anchorY": 64,  # Anchor at bottom of icon like a pin
-    }
-    
-    map_data['icon_data'] = [icon_data for _ in range(len(map_data))]
+    map_data['icon_data'] = map_data.apply(create_icon_data, axis=1)
     
     icon_layer = pdk.Layer(
         "IconLayer",
         data=map_data,
         get_position=["LONGITUDE", "LATITUDE"],
         get_icon="icon_data",
-        get_size="icon_size",
         size_scale=1,
-        pickable=True,
-        get_color="color"
+        pickable=True
     )
 
     view_state = pdk.ViewState(
