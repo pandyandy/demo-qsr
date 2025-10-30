@@ -36,7 +36,7 @@ def locations(data):
 
     map_data['color'] = map_data['RATING'].apply(get_color)
     # Scale radius based on review count for visual distinction - larger for better visibility when zoomed out
-    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 50, 300), 600))
+    map_data['radius'] = map_data['COUNT'].apply(lambda x: min(max(x * 80, 500), 1000))
     
     scatterplot_layer = pdk.Layer(
         "ScatterplotLayer",
@@ -54,7 +54,7 @@ def locations(data):
     view_state = pdk.ViewState(
         latitude=center_lat,
         longitude=center_long,
-        zoom=3.5,  # Zoomed out to show all of Canada
+        zoom=4,  # Zoomed out to show Canada as a whole
         pitch=0
     )
 
