@@ -38,14 +38,14 @@ def locations(data):
     # Scale icon size based on review count for visual distinction
     map_data['icon_size'] = map_data['COUNT'].apply(lambda x: min(max(x * 20, 40), 100))
     
-    # Define icon data - using flag emoji or pin icon
-    ICON_URL = "https://img.icons8.com/emoji/48/000000/triangular-flag-on-post.png"
+    # Define icon data - using pin emoji 📍
+    ICON_URL = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='50'%3E📍%3C/text%3E%3C/svg%3E"
     
     icon_data = {
         "url": ICON_URL,
-        "width": 48,
-        "height": 48,
-        "anchorY": 48,  # Anchor at bottom of icon like a pin
+        "width": 64,
+        "height": 64,
+        "anchorY": 64,  # Anchor at bottom of icon like a pin
     }
     
     map_data['icon_data'] = [icon_data for _ in range(len(map_data))]
@@ -82,4 +82,4 @@ def locations(data):
         }
     )
     st.pydeck_chart(deck, use_container_width=True, height=700)
-    st.caption("_The size of the flag represents the number of collected reviews, the color represents the average rating._")
+    st.caption("_The size of the pin represents the number of collected reviews, the color represents the average rating._")
